@@ -84,20 +84,6 @@
             border-color: var(--accent-color);
         }
 
-        <!-- Панель входа для администратора -->
-<div id="auth-container" style="text-align: center; margin: 20px 0;">
-    <div id="login-box">
-        <input type="email" id="admin-email" placeholder="Email" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
-        <input type="password" id="admin-password" placeholder="Пароль" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
-        <button onclick="adminLogin()" style="padding: 8px 15px; background: #8A9A86; color: white; border: none; border-radius: 6px; cursor: pointer;">Войти</button>
-    </div>
-    <div id="logout-box" style="display: none;">
-        <span id="user-email-display" style="margin-right: 10px; font-weight: bold; color: #3A403B;"></span>
-        <button onclick="adminLogout()" style="padding: 8px 15px; background: #D4A373; color: white; border: none; border-radius: 6px; cursor: pointer;">Выйти</button>
-    </div>
-</div>
-        
-
         /* Главный контейнер */
         .container {
             max-width: 1200px;
@@ -290,6 +276,22 @@
     <div class="container">
         <section class="hero">
             <h1>Мягкая одежда для самых любимых</h1>
+            <!-- Панель входа для администратора -->
+<div id="auth-container" style="text-align: center; margin: 20px 0;">
+    <div id="login-box">
+        <input type="email" id="admin-email" placeholder="Email" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
+        <input type="password" id="admin-password" placeholder="Пароль" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
+        <button onclick="adminLogin()" style="padding: 8px 15px; background: #8A9A86; color: white; border: none; border-radius: 6px; cursor: pointer;">Войти</button>
+    </div>
+    <div id="logout-box" style="display: none;">
+        <span id="user-email-display" style="margin-right: 10px; font-weight: bold; color: #3A403B;"></span>
+        <button onclick="adminLogout()" style="padding: 8px 15px; background: #D4A373; color: white; border: none; border-radius: 6px; cursor: pointer;">Выйти</button>
+    </div>
+</div>
+
+<!-- Кнопка добавления (скрыта до входа) -->
+<button id="add-product-btn" style="display: none; margin: 20px auto; padding: 10px 20px; background: #8A9A86; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="openModal()">+ Добавить объявление</button>
+            
             <p>Натуральные ткани, спокойные оттенки и абсолютный комфорт</p>
         </section>
 
