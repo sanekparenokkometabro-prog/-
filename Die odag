@@ -293,9 +293,9 @@
 
     <script>
         // НАСТРОЙКИ SUPABASE (замени на свои данные из проекта Supabase)
-        const SUPABASE_URL = 'https://твой-проект.supabase.co';
-        const SUPABASE_ANON_KEY = 'твой-публичный-anon-ключ';
-        
+        const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
+
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let cart = [];
