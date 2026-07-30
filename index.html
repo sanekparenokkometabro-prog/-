@@ -474,14 +474,14 @@
             }
         }
 
-        async function adminLogin() {
+                async function adminLogin() {
             const emailInput = document.getElementById('admin-email');
             const passwordInput = document.getElementById('admin-password');
             
             if (!emailInput || !passwordInput) return;
             
-            const email = emailInput.value;
-            const password = passwordInput.value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
             if (!email || !password) {
                 alert('Введите email и пароль!');
@@ -499,7 +499,8 @@
                 alert('Успешный вход!');
                 checkUserAccess();
             }
-        }
+                }
+        
 
         async function adminLogout() {
             await _supabase.auth.signOut();
