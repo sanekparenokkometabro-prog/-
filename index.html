@@ -324,13 +324,10 @@
     </div>
 
     <script>
-        // Используем оригинальные параметры твоего проекта Supabase
-        const SUPABASE_URL = 'https://zrhjtzdbfyvhgzrjrzef.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyaGp0emRiZnl2aGd6cmpyemVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzg4MTEsImV4cCI6MjA1NjgxNDgxMX0.ВСТАВЬ_СВОЙ_ПОЛНЫЙ_КЛЮЧ_ЕСЛИ_НУЖНО';
+                const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
         
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let cart = [];
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function fetchProducts() {
             const { data, error } = await _supabase.from('products').select('*');
