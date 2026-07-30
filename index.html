@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ойка</title>
-    <!-- Подключаем Supabase, если еще не подключен -->
+    <!-- Подключаем Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -25,10 +25,17 @@
 
     <!-- JavaScript логика -->
     <script>
-        // Инициализация Supabase (замени на свои ключи, если они тут нужны)
-        // const supabaseUrl = 'ВАШ_URL';
-        // const supabaseKey = 'ВАШ_КЛЮЧ';
-        // const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // Инициализация клиента Supabase (используем глобальный объект библиотеки)
+        const SUPABASE_URL = ' ТВОЙ_URL_SUPABASE '; // если у тебя эти ключи прописаны в другом файле или выше, оставь как есть
+        const SUPABASE_ANON_KEY = ' ТВОЙ_КЛЮЧ_SUPABASE ';
+        
+        // Проверяем, если supabase еще не создан глобально, создаем его
+        const _supabase = window.supabase.createClient(
+            window.supabaseUrl || 'https://твой-проект.supabase.co', 
+            window.supabaseKey || 'твой-анонимный-ключ'
+        );
+        // Если в твоем проекте переменная называется просто supabase, используем её:
+        const supabase = window.supabase ? window.supabase : _supabase;
 
         let cart = [];
         const countSpan = document.getElementById('cart-count');
@@ -79,7 +86,6 @@
                 created_at: new Date()
             };
 
-            // Отправка заказа в таблицу orders в Supabase
             const { error } = await supabase.from('orders').insert([orderData]);
 
             if (error) {
@@ -95,29 +101,38 @@
 
         // Функция проверки доступа
         async function checkUserAccess() {
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            const addBtn = document.getElementById('add-product-btn');
-            const loginBox = document.getElementById('login-box');
-            const logoutBox = document.getElementById('logout-box');
-            const emailDisplay = document.getElementById('user-email-display');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                const addBtn = document.getElementById('add-product-btn');
+                const loginBox = document.getElementById('login-box');
+                const logoutBox = document.getElementById('logout-box');
+                const emailDisplay = document.getElementById('user-email-display');
 
-            if (session) {
-                if (addBtn) addBtn.style.display = 'block';
-                if (loginBox) loginBox.style.display = 'none';
-                if (logoutBox) logoutBox.style.display = 'block';
-                if (emailDisplay) emailDisplay.textContent = session.user.email;
-            } else {
-                if (addBtn) addBtn.style.display = 'none';
-                if (loginBox) loginBox.style.display = 'block';
-                if (logoutBox) logoutBox.style.display = 'none';
+                if (session) {
+                    if (addBtn) addBtn.style.display = 'block';
+                    if (loginBox) loginBox.style.display = 'none';
+                    if (logoutBox) logoutBox.style.display = 'block';
+                    if (emailDisplay) emailDisplay.textContent = session.user.email;
+                } else {
+                    if (addBtn) addBtn.style.display = 'none';
+                    if (loginBox) loginBox.style.display = 'block';
+                    if (logoutBox) logoutBox.style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Ошибка проверки сессии:", e);
             }
         }
 
         // Функция входа в систему
         async function adminLogin() {
-            const email = document.getElementById('admin-email').value;
-            const password = document.getElementById('admin-password').value;
+            const emailInput = document.getElementById('admin-email');
+            const passwordInput = document.getElementById('admin-password');
+            
+            if (!emailInput || !passwordInput) return;
+            
+            const email = emailInput.value;
+            const password = passwordInput.value;
 
             if (!email || !password) {
                 alert('Введите email и пароль!');
@@ -146,10 +161,12 @@
         }
 
         // Запускаем проверку при загрузке страницы
-        checkUserAccess();
+        window.addEventListener('DOMContentLoaded', () => {
+            checkUserAccess();
+        });
     </script>
     
-    <!-- Панель входа и кнопка добавления (вставлена ровно один раз) -->
+    <!-- Панель входа и кнопка добавления -->
     <div style="text-align: center; margin: 30px 0;">
         <div id="login-box">
             <input type="email" id="admin-email" placeholder="Email" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
