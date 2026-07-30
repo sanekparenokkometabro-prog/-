@@ -4,66 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ойка</title>
-    <!-- Подключаем Supabase -->
+    <!-- Подключаем библиотеку Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #FAF9F6;
+            color: #3A403B;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #EBE5DC;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .btn {
+            background: #8A9A86;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .cart-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .cart-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 320px;
+        }
+        .auth-box {
+            text-align: center;
+            margin-top: 40px;
+            background: #EBE5DC;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .auth-box input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: 80%;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Шапка и кнопка корзины -->
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
-        <h1>Мягкая одежда для самых любимых</h1>
-        <button onclick="toggleCartModal(true)" style="padding: 8px 15px; background: #8A9A86; color: white; border: none; border-radius: 8px; cursor: pointer;">
-            Корзина (<span id="cart-count">0</span>)
-        </button>
-    </div>
-    
+    <!-- Шапка сайта -->
+    <header>
+        <h1>Ойка — Мягкая одежда</h1>
+        <button class="btn" onclick="toggleCartModal(true)">Корзина (<span id="cart-count">0</span>)</button>
+    </header>
+
+    <!-- Основной контент (каталог товаров) -->
+    <main style="text-align: center;">
+        <h2>Натуральные ткани и абсолютный комфорт</h2>
+        <div id="products-list" style="margin: 20px 0;">
+            <p>Загрузка товаров...</p>
+        </div>
+
+        <!-- Кнопка добавления товара (видна только админу) -->
+        <button id="add-product-btn" class="btn" style="display: none; background: #D4A373; margin-top: 20px;" onclick="alert('Открытие формы добавления')">+ Добавить объявление</button>
+    </main>
+
     <!-- Модальное окно корзины -->
-    <div id="cartModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center;" onclick="handleOverlayClick(event)">
-        <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
+    <div id="cartModal" class="cart-modal" onclick="handleOverlayClick(event)">
+        <div class="cart-content">
             <h3>Корзина</h3>
-            <div id="cart-items"></div>
-            <p>Всего товаров: <span id="cart-count-modal">0</span></p>
-            <p>Итого: <span id="cart-total">0 грн</span></p>
-            <button onclick="checkout()" style="padding: 5px 10px; background: #8A9A86; color: white; border: none; border-radius: 4px; cursor: pointer;">Оформить заказ</button>
-            <button onclick="toggleCartModal(false)" style="padding: 5px 10px; background: #ccc; border: none; border-radius: 4px; cursor: pointer;">Закрыть</button>
+            <div id="cart-items"><p>Корзина пуста</p></div>
+            <p><strong>Итого: <span id="cart-total">0</span> грн</strong></p>
+            <button class="btn" onclick="checkout()">Оформить заказ</button>
+            <button class="btn" style="background: #ccc; color: #333;" onclick="toggleCartModal(false)">Закрыть</button>
         </div>
     </div>
 
-    <!-- JavaScript логика -->
-    <script>
-        // Инициализация Supabase (используем твои оригинальные данные или переменные окружения)
-        const supabaseUrl = 'https://zrhjtzdbfyvhgzrjrzef.supabase.co'; // если у тебя тут были твои ключи, вставь их
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // (замени на свой актуальный ключ, если он отличается)
+    <!-- Панель входа для администратора -->
+    <div class="auth-box">
+        <div id="login-box">
+            <h3>Вход для администратора</h3>
+            <input type="email" id="admin-email" placeholder="Email"><br>
+            <input type="password" id="admin-password" placeholder="Пароль"><br>
+            <button class="btn" onclick="adminLogin()">Войти</button>
+        </div>
         
-        // Создаем клиент безопасно
-        const supabase = window.supabase.createClient(
-            window.SUPABASE_URL || 'https://placeholder.supabase.co', 
-            window.SUPABASE_ANON_KEY || 'placeholder'
-        );
+        <div id="logout-box" style="display: none;">
+            <p>Вы вошли как: <span id="user-email-display" style="font-weight: bold;"></span></p>
+            <button class="btn" style="background: #D4A373;" onclick="adminLogout()">Выйти</button>
+        </div>
+    </div>
+
+    <!-- Логика JavaScript -->
+    <script>
+        // НАСТРОЙКИ SUPABASE (замени на свои актуальные ключи, если они отличаются)
+        const SUPABASE_URL = 'https://zrhjtzdbfyvhgzrjrzef.supabase.co'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
+
+        // Инициализация клиента Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let cart = [];
-        const countSpan = document.getElementById('cart-count');
-        const countModalSpan = document.getElementById('cart-count-modal');
-        const totalSpan = document.getElementById('cart-total');
 
+        // Обновление интерфейса корзины
         function updateCartUI() {
+            const countSpan = document.getElementById('cart-count');
+            const totalSpan = document.getElementById('cart-total');
+            
             let totalCount = 0;
             let totalPrice = 0;
+            
             cart.forEach(item => {
                 totalCount += item.quantity;
                 totalPrice += item.price * item.quantity;
             });
 
             if (countSpan) countSpan.innerText = totalCount;
-            if (countModalSpan) countModalSpan.innerText = totalCount;
-            if (totalSpan) totalSpan.innerText = totalPrice + ' грн';
+            if (totalSpan) totalSpan.innerText = totalPrice;
         }
 
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCartUI();
-        }
-
+        // Управление модальным окном корзины
         function toggleCartModal(show) {
             const modal = document.getElementById('cartModal');
             if (modal) modal.style.display = show ? 'flex' : 'none';
@@ -95,7 +178,7 @@
             const { error } = await supabase.from('orders').insert([orderData]);
 
             if (error) {
-                alert('Ошибка при оформлении заказа. Попробуйте еще раз.');
+                alert('Ошибка при оформлении заказа.');
                 console.error(error);
             } else {
                 alert('Заказ успешно оформлен!');
@@ -105,7 +188,7 @@
             }
         }
 
-        // Проверка доступа администратора
+        // Проверка авторизации при загрузке
         async function checkUserAccess() {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
@@ -130,15 +213,10 @@
             }
         }
 
-        // Вход в систему
+        // Вход администратора
         async function adminLogin() {
-            const emailInput = document.getElementById('admin-email');
-            const passwordInput = document.getElementById('admin-password');
-            
-            if (!emailInput || !passwordInput) return;
-            
-            const email = emailInput.value;
-            const password = passwordInput.value;
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
 
             if (!email || !password) {
                 alert('Введите email и пароль!');
@@ -158,7 +236,7 @@
             }
         }
 
-        // Выход из системы
+        // Выход администратора
         async function adminLogout() {
             await supabase.auth.signOut();
             alert('Вы вышли из системы');
@@ -166,26 +244,11 @@
             location.reload();
         }
 
+        // Запуск при загрузке страницы
         window.addEventListener('DOMContentLoaded', () => {
             checkUserAccess();
+            updateCartUI();
         });
     </script>
-    
-    <!-- Панель входа и кнопка добавления -->
-    <div style="text-align: center; margin: 30px 0;">
-        <div id="login-box">
-            <input type="email" id="admin-email" placeholder="Email" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
-            <input type="password" id="admin-password" placeholder="Пароль" style="padding: 8px; margin-right: 5px; border: 1px solid #EBE5DC; border-radius: 6px;">
-            <button onclick="adminLogin()" style="padding: 8px 15px; background: #8A9A86; color: white; border: none; border-radius: 6px; cursor: pointer;">Войти</button>
-        </div>
-        
-        <div id="logout-box" style="display: none;">
-            <span id="user-email-display" style="margin-right: 10px; font-weight: bold; color: #3A403B;"></span>
-            <button onclick="adminLogout()" style="padding: 8px 15px; background: #D4A373; color: white; border: none; border-radius: 6px; cursor: pointer;">Выйти</button>
-        </div>
-        
-        <button id="add-product-btn" style="display: none; margin: 15px auto 0 auto; padding: 10px 20px; background: #8A9A86; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="openModal()">+ Добавить объявление</button>
-    </div>
-
 </body>
 </html>
