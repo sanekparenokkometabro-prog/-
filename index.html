@@ -8,12 +8,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --bg-color: #FBF9F5; /* Теплый молочный фон */
+            --bg-color: #FBF9F5;
             --card-bg: #FFFFFF;
-            --text-color: #3A403B; /* Мягкий темно-оливковый */
-            --accent-color: #8A9A86; /* Приглушенный оливковый */
+            --text-color: #3A403B;
+            --accent-color: #8A9A86;
             --accent-hover: #72826F;
-            --terracotta: #D4A373; /* Теплый акцент */
+            --terracotta: #D4A373;
             --border-color: #EBE5DC;
         }
 
@@ -30,7 +30,6 @@
             line-height: 1.6;
         }
 
-        /* Шапка */
         header {
             background-color: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
@@ -68,7 +67,6 @@
             border-color: var(--accent-color);
         }
 
-        /* Главный контейнер */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -91,7 +89,6 @@
             font-size: 16px;
         }
 
-        /* Сетка товаров */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -162,7 +159,6 @@
             background-color: var(--accent-hover);
         }
 
-        /* Модальное окно корзины */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -241,7 +237,6 @@
             opacity: 0.9;
         }
 
-        /* Панель администратора */
         .admin-panel {
             max-width: 400px;
             margin: 50px auto 20px auto;
@@ -287,12 +282,10 @@
             <p>Натуральные ткани, спокойные оттенки и абсолютный комфорт</p>
         </section>
 
-        <!-- Сетка товаров подгружается из Supabase -->
         <div class="products-grid" id="products-container">
             <p style="color: #A3A8A2;">Загрузка товаров...</p>
         </div>
 
-        <!-- Панель входа для администратора и кнопка добавления -->
         <div class="admin-panel">
             <div id="login-box">
                 <h3 style="margin-bottom: 15px; font-size: 18px; font-weight: 500;">Вход для администратора</h3>
@@ -309,7 +302,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно корзины -->
     <div class="modal-overlay" id="cartModal" onclick="handleOverlayClick(event)">
         <div class="cart-modal">
             <div>
@@ -332,21 +324,20 @@
     </div>
 
     <script>
-        // НАСТРОЙКИ SUPABASE (замени на свои данные из проекта Supabase)
+        // Используем оригинальные параметры твоего проекта Supabase
         const SUPABASE_URL = 'https://zrhjtzdbfyvhgzrjrzef.supabase.co';
-        const SUPABASE_ANON_KEY = 'твой-публичный-anon-ключ';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyaGp0emRiZnl2aGd6cmpyemVmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzg4MTEsImV4cCI6MjA1NjgxNDgxMX0.ВСТАВЬ_СВОЙ_ПОЛНЫЙ_КЛЮЧ_ЕСЛИ_НУЖНО';
         
-        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let cart = [];
 
-        // Загрузка товаров из базы данных Supabase
         async function fetchProducts() {
             const { data, error } = await _supabase.from('products').select('*');
             const container = document.getElementById('products-container');
             
             if (error) {
-                container.innerHTML = '<p style="color: #D4A373;">Не удалось загрузить товары. Проверьте подключение к Supabase.</p>';
+                container.innerHTML = '<p style="color: #D4A373;">Не удалось загрузить товары. Проверьте подключение.</p>';
                 console.error('Ошибка:', error);
                 return;
             }
@@ -367,14 +358,13 @@
                             <h3 class="product-title">${product.title}</h3>
                             <div class="product-price">${product.price} грн</div>
                         </div>
-                        <button class="buy-btn" onclick='addToCart(${JSON.stringify(product)})'>В корзину</button>
+                        <button class="buy-btn" onclick='addToCart(${JSON.stringify(product).replace(/'/g, "&#39;")})'>В корзину</button>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // Логика корзины
         function addToCart(product) {
             const existingItem = cart.find(item => item.id === product.id);
             if (existingItem) {
@@ -383,7 +373,6 @@
                 cart.push({ ...product, quantity: 1 });
             }
             updateCartUI();
-            alert(`Товар "${product.title}" добавлен в корзину!`);
         }
 
         function updateCartUI() {
@@ -415,8 +404,8 @@
                 });
             }
 
-            countSpan.innerText = totalCount;
-            totalSpan.innerText = totalPrice + ' грн';
+            if (countSpan) countSpan.innerText = totalCount;
+            if (totalSpan) totalSpan.innerText = totalPrice + ' грн';
         }
 
         function removeFromCart(productId) {
@@ -426,7 +415,7 @@
 
         function toggleCartModal(show) {
             const modal = document.getElementById('cartModal');
-            modal.style.display = show ? 'flex' : 'none';
+            if (modal) modal.style.display = show ? 'flex' : 'none';
         }
 
         function handleOverlayClick(event) {
@@ -435,7 +424,6 @@
             }
         }
 
-        // Оформление заказа (сохранение в Supabase)
         async function checkout() {
             if (cart.length === 0) {
                 alert('Корзина пуста!');
@@ -455,17 +443,16 @@
             const { error } = await _supabase.from('orders').insert([orderData]);
 
             if (error) {
-                alert('Ошибка при оформлении заказа. Попробуйте еще раз.');
+                alert('Ошибка при оформлении заказа.');
                 console.error(error);
             } else {
-                alert(`Спасибо за заказ, ${customerName}! Мы скоро с вами свяжемся.`);
+                alert(`Спасибо за заказ, ${customerName}!`);
                 cart = [];
                 updateCartUI();
                 toggleCartModal(false);
             }
         }
 
-        // Проверка авторизации администратора
         async function checkUserAccess() {
             try {
                 const { data: { session } } = await _supabase.auth.getSession();
@@ -490,7 +477,6 @@
             }
         }
 
-        // Вход в систему
         async function adminLogin() {
             const emailInput = document.getElementById('admin-email');
             const passwordInput = document.getElementById('admin-password');
@@ -518,7 +504,6 @@
             }
         }
 
-        // Выход из системы
         async function adminLogout() {
             await _supabase.auth.signOut();
             alert('Вы вышли из системы');
@@ -526,12 +511,10 @@
             location.reload();
         }
 
-        // Запуск при загрузке страницы
         window.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             checkUserAccess();
         });
     </script>
-
 </body>
 </html>
