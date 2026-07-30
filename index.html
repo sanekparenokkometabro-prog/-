@@ -510,6 +510,63 @@ async function saveProduct() {
 
 // Запускаем проверку при загрузке страницы
 checkUserAccess();
+
+        // Функция входа в систему
+async function adminLogin() {
+    const email = document.getElementById('admin-email').value.trim();
+    const password = document.getElementById('admin-password').value.trim();
+
+    if (!email || !password) {
+        alert('Введите email и пароль!');
+        return;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+    });
+
+    if (error) {
+        alert('Ошибка входа: ' + error.message);
+    } else {
+        alert('Успешный вход!');
+        checkUserAccess(); // Проверяем доступ и показываем кнопку
+    }
+}
+
+// Функция выхода из системы
+async function adminLogout() {
+    await supabase.auth.signOut();
+    alert вышли из системы);
+    checkUserAccess(); // Скрываем кнопку и форму входа
+    location.reload();
+}
+
+// Улучшенная проверка сессии (управляет видимостью элементов)
+async function checkUserAccess() {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    const addBtn = document.getElementById('add-product-btn');
+    const loginBox = document.getElementById('login-box');
+    const logoutBox = document.getElementById('logout-box');
+    const emailDisplay = document.getElementById('user-email-display');
+
+    if (session) {
+        // Если вошли — показываем кнопку плюсика и кнопку выхода, прячем поля ввода
+        if (addBtn) addBtn.style.display = 'block';
+        if (loginBox) loginBox.style.display = 'none';
+        if (logoutBox) logoutBox.style.display = 'inline-block';
+        if (emailDisplay) emailDisplay.textContent = session.user.email;
+    } else {
+        // Если не вошли — прячем кнопку плюсика, показываем поля для входа
+        if (addBtn) addBtn.style.display = 'none';
+        if (loginBox) loginBox.style.display = 'block';
+        if (logoutBox) logoutBox.style.display = 'none';
+    }
+}
+
+// Запускаем проверку при загрузке страницы
+checkUserAccess();
         
     </script>
 </body>
