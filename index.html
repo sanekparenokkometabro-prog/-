@@ -272,7 +272,7 @@
     <header>
         <div class="logo">🌿 Ойка</div>
         <button class="cart-btn" onclick="toggleCartModal(true)">
-            🛒 Корзина (<span id="cart-count">0</span>)
+            🛒 Корзина (<span id="cart-count">0</span>) 
         </button>
     </header>
 
@@ -514,5 +514,94 @@
             checkUserAccess();
         });
     </script>
+    <!-- Модальное окно добавления товара -->
+<div class="modal-overlay" id="addProductModal" onclick="handleAddModalOverlayClick(event)">
+    <div class="cart-modal" style="justify-content: flex-start;">
+        <div class="cart-header">
+            <h2>Добавить товар</h2>
+            <button class="close-cart" onclick="toggleAddProductModal(false)">✕</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Название товара</label>
+                <input type="text" id="new-product-title" placeholder="Например: Боди из органического хлопка" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Цена (грн)</label>
+                <input type="number" id="new-product-price" placeholder="450" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Ссылка на картинку</label>
+                <input type="text" id="new-product-image" placeholder="https://..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            </div>
+            <button class="checkout-btn" style="margin-top: 15px;" onclick="saveNewProduct()">Сохранить товар</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAddProductModal(show) {
+        const modal = document.getElementById('addProductModal');
+        if (modal) modal.style.display = show ? 'flex' : 'none';
+    }
+
+    function handleAddModalOverlayClick(event) {
+        if (event.target.id === 'addProductModal') {
+            toggleAddProductModal(false);
+        }
+    }
+
+    async function saveNewProduct() {
+        const title = document.getElementById('new-product-title').value.trim();
+        const price = parseFloat(document.getElementById('new-product-price').value);
+        const image_url = document.getElementById('new-product-image').value.trim();
+
+        if (!title || isNaN(price)) {
+            alert('Пожалуйста, заполните название и цену товара!');
+            return;
+        }
+
+        const { error } = await _supabase.from('products').insert([
+            { title: title, price: price, image_url: image_url }
+        ]);
+
+        if (error) {
+            alert('Ошибка при сохранении: ' + error.message);
+            console.error(error);
+        } else {
+            alert('Товар успешно добавлен!');
+            toggleAddProductModal(false);
+            document.getElementById('new-product-title').value = '';
+            document.getElementById('new-product-price').value = '';
+            document.getElementById('new-product-image').value = '';
+            fetchProducts();
+        }
+    }
+</script>
+    <!-- Модальное окно добавления товара -->
+<div class="modal-overlay" id="addProductModal" onclick="handleAddModalOverlayClick(event)">
+    <div class="cart-modal" style="justify-content: flex-start;">
+        <div class="cart-header">
+            <h2>Добавить товар</h2>
+            <button class="close-cart" onclick="toggleAddProductModal(false)">✕</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Название товара</label>
+                <input type="text" id="new-product-title" placeholder="Например: Боди из органического хлопка" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Цена (грн)</label>
+                <input type="number" id="new-product-price" placeholder="450" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Ссылка на картинку</label>
+                <input type="text" id="new-product-image" placeholder="https://..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            </div>
+            <button class="checkout-btn" style="margin-top: 15px;" onclick="saveNewProduct()">Сохранить товар</button>
+        </div>
+    </div>
+</div>
+    
 </body>
 </html>
