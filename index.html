@@ -601,29 +601,30 @@
     
 </script>
     <!-- Модальное окно добавления товара -->
-<div class="modal-overlay" id="addProductModal" onclick="handleAddModalOverlayClick(event)">
-    <div class="cart-modal" style="justify-content: flex-start;">
-        <div class="cart-header">
-            <h2>Добавить товар</h2>
-            <button class="close-cart" onclick="toggleAddProductModal(false)">✕</button>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;">
-            <div>
-                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Название товара</label>
-                <input type="text" id="new-product-title" placeholder="Например: Боди из органического хлопка" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+    <div class="modal-overlay" id="addProductModal" onclick="if(event.target === this) toggleAddProductModal()">
+        <div class="cart-modal" style="justify-content: flex-start; max-width: 400px; width: 90%;">
+            <div class="cart-header">
+                <h2>Добавить товар</h2>
+                <button class="close-cart" onclick="toggleAddProductModal()">✕</button>
             </div>
-            <div>
-                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Цена (грн)</label>
-                <input type="number" id="new-product-price" placeholder="450" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                <div>
+                    <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Название товара</label>
+                    <input type="text" id="new-product-title" placeholder="Введите название..." style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #fff;">
+                </div>
+                <div>
+                    <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Цена (грн)</label>
+                    <input type="number" id="new-product-price" placeholder="0" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #fff;">
+                </div>
+                <div>
+                    <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Картинка товара</label>
+                    <input type="file" id="new-product-file" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #fff;">
+                </div>
+                <button class="checkout-btn" style="margin-top: 10px;" onclick="saveNewProduct()">Сохранить товар</button>
             </div>
-            <div>
-                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Картинка товара</label>
-<input type="file" id="new-product-file" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #fff;">
-             <div>   
-            <button class="checkout-btn" style="margin-top: 15px;" onclick="saveNewProduct()">Сохранить товар</button>
         </div>
     </div>
-</div>
-    
+
 </body>
 </html>
+
