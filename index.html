@@ -549,33 +549,56 @@
             toggleAddProductModal(false);
         }
     }
+    
+        async function saveNewProduct() {
+            const title = document.getElementById('new-product-title').value.trim();
+            const price = parseFloat(document.getElementById('new-product-price').value);
+            const fileInput = document.getElementById('new-product-file');
+            const file = fileInput.files[0];
 
-    async function saveNewProduct() {
-        const title = document.getElementById('new-product-title').value.trim();
-        const price = parseFloat(document.getElementById('new-product-price').value);
-        const image_url = document.getElementById('new-product-image').value.trim();
+            if (!title || isNaN(price)) {
+                alert('Пожалуйста, заполните название и цену товара!');
+                return;
+            }
 
-        if (!title || isNaN(price)) {
-            alert('Пожалуйста, заполните название и цену товара!');
-            return;
+            let imageUrl = '';
+
+            if (file) {
+                const fileName = Date.now() + '_' + file.name;
+                const { data: uploadData, error: uploadError } = await _supabase.storage
+                    .from('images')
+                    .upload(fileName, file);
+
+                if (uploadError) {
+                    alert('Ошибка загрузки картинки: ' + uploadError.message);
+                    console.error(uploadError);
+                    return;
+                }
+
+                const { data: publicUrlData } = _supabase.storage
+                    .from('images')
+                    .getPublicUrl(fileName);
+
+                imageUrl = publicUrlData.publicUrl;
+            }
+
+            const { error } = await _supabase.from('products').insert([
+                { title: title, price: price, image_url: imageUrl }
+            ]);
+
+            if (error) {
+                alert('Ошибка при сохранении товара: ' + error.message);
+                console.error(error);
+            } else {
+                alert('Товар успешно добавлен!');
+                toggleAddProductModal(false);
+                document.getElementById('new-product-title').value = '';
+                document.getElementById('new-product-price').value = '';
+                fileInput.value = '';
+                fetchProducts();
+            }
         }
-
-        const { error } = await _supabase.from('products').insert([
-            { title: title, price: price, image_url: image_url }
-        ]);
-
-        if (error) {
-            alert('Ошибка при сохранении: ' + error.message);
-            console.error(error);
-        } else {
-            alert('Товар успешно добавлен!');
-            toggleAddProductModal(false);
-            document.getElementById('new-product-title').value = '';
-            document.getElementById('new-product-price').value = '';
-            document.getElementById('new-product-image').value = '';
-            fetchProducts();
-        }
-    }
+    
 </script>
     <!-- Модальное окно добавления товара -->
 <div class="modal-overlay" id="addProductModal" onclick="handleAddModalOverlayClick(event)">
@@ -594,9 +617,9 @@
                 <input type="number" id="new-product-price" placeholder="450" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
             </div>
             <div>
-                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Ссылка на картинку</label>
-                <input type="text" id="new-product-image" placeholder="https://..." style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; outline: none;">
-            </div>
+                <label style="font-size: 14px; font-weight: 500; display: block; margin-bottom: 5px;">Картинка товара</label>
+<input type="file" id="new-product-file" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 8px; outline: none; background: #fff;">
+             <div>   
             <button class="checkout-btn" style="margin-top: 15px;" onclick="saveNewProduct()">Сохранить товар</button>
         </div>
     </div>
