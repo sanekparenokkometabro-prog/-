@@ -306,12 +306,19 @@
             <div>
                 <div class="cart-header">
                     <h2>Ваша корзина</h2>
-                    <button class="close-cart" onclick="toggleCartModal(false)">✕</button>
-                </div>
-                <div class="cart-items" id="cart-items-container">
-                    <p style="color: #A3A8A2; text-align: center; margin-top: 40px;">Корзина пуста</p>
-                </div>
-            </div>
+    <div id="favList"></div>
+    <button onclick="hideModal('favModal')" style="width:100%; margin-top:10px; background:none;">Закрыть</button>
+</div></div>
+
+<script>
+    const sb = supabase.createClient('https://qdesomzmhrghygzprftz.supabase.co', 'sb_publishable_ru6cRM3d9mYcDj7tjvAStQ_7rqIftg0');
+    
+    let ads = JSON.parse(localStorage.getItem('cached_ads') || '[]');
+    let myFavs = [], activeAdId = null, slideIdx = 0, activeCat = '', isMyMode = false, isLoaded = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initApp();
+    });
             <div>
                 <div class="cart-total">
                     <span>Итого:</span>
