@@ -1,1 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ойка — Детская одежда в природном стиле</title>
+    <!-- Подключаем библиотеку Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #FBF9F5; /* Теплый молочный фон */
+            --card-bg: #FFFFFF;
+            --text-color: #3A403B; /* Мягкий темно-оливковый */
+            --accent-color: #8A9A86; /* Приглушенный оливковый */
+            --accent-hover: #72826F;
+            --terracotta: #D4A373; /* Теплый акцент */
+            --border-color: #EBE5DC;
+        }
 
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Шапка */
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+
+        .cart-btn {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 15px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .cart-btn:hover {
+            border-color: var(--accent-color);
+        }
+
+        /* Главный контейнер */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: #6B726E;
+            font-size: 16px;
+        }
+
+        /* Сетка товаров */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            background-color: #F4F1EA;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #A3A8A2;
+            font-size: 14px;
+        }
+
+        .product-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 16px;
+            color: var(--terracotta);
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .buy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            width: 100%;
+        }
+
+        .buy-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Модальное окно корзины */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            justify-content: flex-end;
+            z-index: 1000;
+        }
+
+        .cart-modal {
+            background: var(--card-bg);
+            width: 400px;
+            height: 100%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.05);
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .cart-items {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 15px;
+        }
+
+        .cart-total {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .checkout-btn {
+            background-color: var(--terracotta);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
+
+        .checkout-btn:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .cart-modal {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">🌿 Ойка</div>
+        <button class="cart-btn" onclick="toggleCartModal(true)">
+            🛒 Корзина (<span id="cart-count">0</span>)
+        </button>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>Мягкая одежда для самых любимых</h1>
+            <p>Натуральные ткани, спокойные оттенки и абсолютный комфорт</p>
+        </section>
+
+        <!-- Сетка товаров подгружается из Supabase -->
+        <div class="products-grid" id="products-container">
+            <p style="color: #A3A8A2;">Загрузка товаров...</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно корзины -->
+    <div class="modal-overlay" id="cartModal" onclick="handleOverlayClick(event)">
+        <div class="cart-modal">
+            <div>
+                <div class="cart-header">
+                    <h2>Ваша корзина</h2>
+                    <button class="close-cart" onclick="toggleCartModal(false)">✕</button>
+                </div>
+                <div class="cart-items" id="cart-items-container">
+                    <p style="color: #A3A8A2; text-align: center; margin-top: 40px;">Корзина пуста</p>
+                </div>
+            </div>
+            <div>
+                <div class="cart-total">
+                    <span>Итого:</span>
+                    <span id="cart-total-price">0 грн</span>
+                </div>
+                <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // НАСТРОЙКИ SUPABASE (замени на свои данные из проекта Supabase)
+        const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let cart = [];
+
+        // Загрузка товаров из базы данных Supabase
+        async function fetchProducts() {
+            const { data, error } = await _supabase.from('products').select('*');
+            const container = document.getElementById('products-container');
+            
+            if (error) {
+                container.innerHTML = '<p style="color: #D4A373;">Не удалось загрузить товары. Проверьте подключение к Supabase.</p>';
+                console.error('Ошибка:', error);
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<p>В каталоге поки нет товаров.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-image">${product.image_url ? `<img src="${product.image_url}" style="width:100%; height:100%; object-fit:cover;">` : 'Фото товара'}</div>
+                    <div class="product-info">
+                        <div>
+                            <h3 class="product-title">${product.title}</h3>
+                            <div class="product-price">${product.price} грн</div>
+                        </div>
+                        <button class="buy-btn" onclick='addToCart(${JSON.stringify(product)})'>В корзину</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Логика корзины
+        function addToCart(product) {
+            const existingItem = cart.find(item => item.id === product.id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+            updateCartUI();
+            alert(`Товар "${product.title}" добавлен в корзину!`);
+        }
+
+        function updateCartUI() {
+            const countSpan = document.getElementById('cart-count');
+            const itemsContainer = document.getElementById('cart-items-container');
+            const totalSpan = document.getElementById('cart-total-price');
+
+            let totalCount = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                itemsContainer.innerHTML = '<p style="color: #A3A8A2; text-align: center; margin-top: 40px;">Корзина пуста</p>';
+            } else {
+                itemsContainer.innerHTML = '';
+                cart.forEach(item => {
+                    totalCount += item.quantity;
+                    totalPrice += item.price * item.quantity;
+
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'cart-item';
+                    itemEl.innerHTML = `
+                        <div>
+                            <strong>${item.title}</strong><br>
+                            <small>${item.price} грн × ${item.quantity}</small>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" style="background:none; border:none; color:#D4A373; cursor:pointer;">Удалить</button>
+                    `;
+                    itemsContainer.appendChild(itemEl);
+                });
+            }
+
+            countSpan.innerText = totalCount;
+            totalSpan.innerText = totalPrice + ' грн';
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCartUI();
+        }
+
+        function toggleCartModal(show) {
+            const modal = document.getElementById('cartModal');
+            modal.style.display = show ? 'flex' : 'none';
+        }
+
+        function handleOverlayClick(event) {
+            if (event.target.id === 'cartModal') {
+                toggleCartModal(false);
+            }
+        }
+
+        // Оформление заказа (сохранение в Supabase)
+        async function checkout() {
+            if (cart.length === 0) {
+                alert('Корзина пуста!');
+                return;
+            }
+
+            const customerName = prompt('Введите ваше имя для заказа:');
+            if (!customerName) return;
+
+            const orderData = {
+                customer_name: customerName,
+                items: cart,
+                total_price: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                created_at: new Date()
+            };
+
+            // Отправка заказа в таблицу orders в Supabase
+            const { error } = await _supabase.from('orders').insert([orderData]);
+
+            if (error) {
+                alert('Ошибка при оформлении заказа. Попробуйте еще раз.');
+                console.error(error);
+            } else {
+                alert(`Спасибо за заказ, ${customerName}! Мы скоро с вами свяжемся.`);
+                cart = [];
+                updateCartUI();
+                toggleCartModal(false);
+            }
+        }
+
+        // Запускаем загрузку товаров при открытии страницы
+        fetchProducts();
+    </script>
+
+</body>
+</html>
