@@ -466,4 +466,44 @@ function renderAds() {
     }
 
     function showModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function hideModal(id) { document.getEleme
+
+
+    
+        // Зум двумя пальцами
+        let currentDistance = Math.hypot(
+            e.touches[0].pageX - e.touches[1].pageX,
+            e.touches[0].pageY - e.touches[1].pageY
+        );
+        
+        let factor = currentDistance / initialDistance;
+        initialDistance = currentDistance;
+        
+        scale *= factor;
+        scale = Math.min(Math.max(scale, 1), 4); // Ограничение: от 1x до 4x
+        updateImageTransform();
+        
+    } else if (e.touches.length === 1 && panning && scale > 1) {
+        // Перетаскивание увеличенной картинки
+        pointX = e.touches[0].clientX - startX;
+        pointY = e.touches[0].clientY - startY;
+        updateImageTransform();
+    }
+}, { passive: false });
+
+modalImg.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) {
+        initialDistance = 0;
+    }
+    if (e.touches.length === 0) {
+        panning = false;
+    }
+    // Если случайно уменьшили меньше исходного — возвращаем к 1x
+    if (scale < 1) {
+        resetZoom();
+    }
+});    
+       
+</script>
+</body>
+</html>
+
