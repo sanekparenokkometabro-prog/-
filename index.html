@@ -2,433 +2,468 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ойка — Детская одежда в природном стиле</title>
-    <!-- Подключаем библиотеку Supabase JS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ЗооРынок 🐾</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
     <style>
-        :root {
-            --bg-color: #FBF9F5; /* Теплый молочный фон */
-            --card-bg: #FFFFFF;
-            --text-color: #3A403B; /* Мягкий темно-оливковый */
-            --accent-color: #8A9A86; /* Приглушенный оливковый */
-            --accent-hover: #72826F;
-            --terracotta: #D4A373; /* Теплый акцент */
-            --border-color: #EBE5DC;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #f2f4f5; padding-bottom: 100px; width: 100%; overflow-x: hidden; }
+        header { background: #002f34; color: white; padding: 15px; text-align: center; }
+        .search-box { padding: 10px; background: white; }
+        .search-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
+        .categories { display: flex; gap: 10px; padding: 10px; overflow-x: auto; background: white; }
+        .cat-btn { padding: 8px 15px; border: 1px solid #002f34; border-radius: 20px; cursor: pointer; white-space: nowrap; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
+        .card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; margin-bottom: 5px; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: space-around; background: #002f34; padding: 10px 20px; border-radius: 35px; width: 95%; max-width: 400px; color: white; z-index: 1000; }
+        .btn-add-center { background: #ff5a5f; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; color: white; border: none; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
+        .content { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 10px; max-height: 85vh; overflow-y: auto; }
+        .field { width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-align: center; display: block; }
+        .btn-chat { background: #002f34; color: white; }
+        .btn-call { background: #28a745; color: white; margin-left: 10px; }
+        .slider-container { position: relative; width: 100%; height: 250px; overflow: hidden; border-radius: 5px; margin-bottom: 10px; }
+        .slider-img { width: 100%; height: 250px; object-fit: cover; display: none; }
+        .slider-img.active { display: block; }
+        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; }
+        
+    .photo-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.98);
+    justify-content: center;
+    align-items: center;
+    /* Важно: отключаем стандартный скролл модального окна */
+    overflow: hidden;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+.photo-modal-container {
+    /* Контейнер занимает весь экран, картинка будет внутри него */
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
+.photo-modal-content {
+    /* Картинка будет масштабироваться библиотекой */
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    cursor: grab; /* Курсор меняется, показывая, что можно двигать */
+}
 
-        /* Шапка */
-        header {
-            background-color: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+.photo-modal-content.is-grabbing {
+    cursor: grabbing; /* Курсор при перетаскивании */
+}        
+        
+/* Кнопки «влево-вправо» поверх увеличенного фото */
+.modal-nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: wait;
+    border: none;
+    font-size: 30px;
+    padding: 15px 20px;
+    cursor: pointer;
+    z-index: 100000;
+    border-radius: 5px;
+}
+.modal-prev { left: 10px; }
+.modal-next { right: 10px; }       
 
-        .logo {
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--accent-color);
-            letter-spacing: 0.5px;
-        }
+/* Аккуратный красный крестик */
+.photo-modal-close {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    color: #ff0000 !important;
+    font-size: 36px !important;  /* Уменьшили размер крестика */
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 999999;
+    background: rgba(0, 0, 0, 0.5);
+    width: 45px;                 /* Уменьшили размер круглой кнопки */
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    line-height: 1;
+}
 
-        .cart-btn {
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            padding: 10px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 15px;
-            color: var(--text-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .cart-btn:hover {
-            border-color: var(--accent-color);
-        }
-
-        /* Главный контейнер */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .hero h1 {
-            font-size: 36px;
-            font-weight: 500;
-            margin-bottom: 10px;
-        }
-
-        .hero p {
-            color: #6B726E;
-            font-size: 16px;
-        }
-
-        /* Сетка товаров */
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 30px;
-        }
-
-        .product-card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
-        }
-
-        .product-image {
-            width: 100%;
-            height: 220px;
-            background-color: #F4F1EA;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #A3A8A2;
-            font-size: 14px;
-        }
-
-        .product-info {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            justify-content: space-between;
-        }
-
-        .product-title {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        .product-price {
-            font-size: 16px;
-            color: var(--terracotta);
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-
-        .buy-btn {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-            width: 100%;
-        }
-
-        .buy-btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        /* Модальное окно корзины */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.4);
-            display: none;
-            justify-content: flex-end;
-            z-index: 1000;
-        }
-
-        .cart-modal {
-            background: var(--card-bg);
-            width: 400px;
-            height: 100%;
-            padding: 30px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: -5px 0 25px rgba(0,0,0,0.05);
-        }
-
-        .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .close-cart {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: var(--text-color);
-        }
-
-        .cart-items {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-            font-size: 15px;
-        }
-
-        .cart-total {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .checkout-btn {
-            background-color: var(--terracotta);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 500;
-            width: 100%;
-            transition: opacity 0.2s;
-        }
-
-        .checkout-btn:hover {
-            opacity: 0.9;
-        }
-
-        @media (max-width: 768px) {
-            .cart-modal {
-                width: 100%;
-            }
-        }
+/* Компактные кнопки «влево-вправо» */
+.modal-nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: none;
+    font-size: 20px;             /* Сделали стрелочки заметно меньше */
+    padding: 10px 14px;          /* Уменьшили саму кнопку */
+    cursor: pointer;
+    z-index: 100000;
+    border-radius: 50%;          /* Сделали их круглыми и аккуратными */
+}
+.modal-prev { left: 10px; }
+.modal-next { right: 10px; }       
+        
     </style>
 </head>
 <body>
-
-    <header>
-        <div class="logo">🌿 Ойка</div>
-        <button class="cart-btn" onclick="toggleCartModal(true)">
-            🛒 Корзина (<span id="cart-count">0</span>)
-        </button>
-    </header>
-
-    <div class="container">
-        <section class="hero">
-            <h1>Мягкая одежда для самых любимых</h1>
-            <p>Натуральные ткани, спокойные оттенки и абсолютный комфорт</p>
-        </section>
-
-        <!-- Сетка товаров подгружается из Supabase -->
-        <div class="products-grid" id="products-container">
-            <p style="color: #A3A8A2;">Загрузка товаров...</p>
-        </div>
+    
+    <div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
+    <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
+    
+    <!-- Новая кнопка "Предыдущее" -->
+    <button class="modal-nav-btn modal-prev" onclick="event.stopPropagation(); changeModalSlide(-1)">&#10094;</button>
+    
+    <!-- Новый контейнер для зума -->
+    <div class="photo-modal-container">
+        <img class="photo-modal-content" id="modalImage" onclick="event.stopPropagation()">
     </div>
-
-    <!-- Модальное окно корзины -->
-    <div class="modal-overlay" id="cartModal" onclick="handleOverlayClick(event)">
-        <div class="cart-modal">
-            <div>
-                <div class="cart-header">
-                    <h2>Ваша корзина</h2>
-                    <button class="close-cart" onclick="toggleCartModal(false)">✕</button>
-                </div>
-                <div class="cart-items" id="cart-items-container">
-                    <p style="color: #A3A8A2; text-align: center; margin-top: 40px;">Корзина пуста</p>
-                </div>
-            </div>
-            <div>
-                <div class="cart-total">
-                    <span>Итого:</span>
-                    <span id="cart-total-price">0 грн</span>
-                </div>
-                <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
-            </div>
-        </div>
+    
+    <!-- Новая кнопка "Следующее" -->
+    <button class="modal-nav-btn modal-next" onclick="event.stopPropagation(); changeModalSlide(1)">&#10095;</button>
     </div>
+    
+    
+<header><h1>ЗооРынок 🐾</h1></header>
 
-    <script>
-        // НАСТРОЙКИ SUPABASE (замени на свои данные из проекта Supabase)
-        const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
+<div class="search-box">
+    <input type="text" id="searchInput" class="search-input" placeholder="Поиск..." oninput="renderAds()">
+    
+    <select id="cityFilter" class="search-input" onchange="renderAds()" style="margin-top: 10px; width: 100%;">
+        <option value="">Все города</option>
+        <option value="Киев">Киев</option>
+        <option value="Кривой Рог">Кривой Рог</option>
+        <option value="Харьков">Харьков</option>
+        <option value="Одесса">Одесса</option>
+        <option value="Днепр">Днепр</option>
+        <option value="Запорожье">Запорожье</option>
+        <option value="Львов">Львов</option>
+        <option value="Николаев">Николаев</option>
+        <option value="Винница">Винница</option>
+        <option value="Чернигов">Чернигов</option>
+        <option value="Полтава">Полтава</option>
+        <option value="Черкассы">Черкассы</option>
+        <option value="Хмельницкий">Хмельницкий</option>
+        <option value="Черновцы">Черновцы</option>
+        <option value="Житомир">Житомир</option>
+        <option value="Сумы">Сумы</option>
+        <option value="Ровно">Ровно</option>
+        <option value="Ивано-Франковск">Ивано-Франковск</option>
+        <option value="Кропивницкий">Кропивницкий</option>
+        <option value="Кропивницкий">Кропивницкий</option>
+        <option value="Тернополь">Тернополь</option>
+        <option value="Луцк">Луцк</option>
+        <option value="Ужгород">Ужгород</option>
+    </select>
+</div>
+    
 
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<div class="categories">
+    <div class="cat-btn" onclick="resetApp()">Все</div>
+    <div class="cat-btn" onclick="filterCat('Веттовары')">Веттовары</div>
+    <div class="cat-btn" onclick="filterCat('Комбикорма')">Комбикорма</div>
+    <div class="cat-btn" onclick="filterCat('Сельхозживотные')">Сельхозживотные</div>
+    <div class="cat-btn" onclick="filterCat('Домашние питомцы')">Питомцы</div>
+</div>
 
-        let cart = [];
+<div class="grid" id="grid"><p style="padding:20px; text-align:center;">Загрузка...</p></div>
 
-        // Загрузка товаров из базы данных Supabase
-        async function fetchProducts() {
-            const { data, error } = await _supabase.from('products').select('*');
-            const container = document.getElementById('products-container');
-            
-            if (error) {
-                container.innerHTML = '<p style="color: #D4A373;">Не удалось загрузить товары. Проверьте подключение к Supabase.</p>';
-                console.error('Ошибка:', error);
-                return;
+<div class="bottom-nav">
+    <button onclick="resetApp()" style="background:none; border:none; color:white; font-size:24px;">🏠</button>
+    <button onclick="showFavorites()" style="background:none; border:none; color:#ff5a5f; font-size:26px;">♥️</button>
+    <button class="btn-add-center" onclick="showModal('form')">+</button>
+    <button id="chatNavBtn"onclick="showMyChats()" style="background:none; border:none; color:white; font-size:24px; position:relative;">
+    💬<span id="chatBadge" style="display:none; position:absolute; top:0; right:0; background:red; width:10px; height:10px; border-radius:50%;"></span>
+    </button>
+    
+    <button onclick="manageMyAds()" style="background:none; border:none; color:white; font-size:24px;">👤</button>
+</div>
+
+<!-- Модальное окно формы подачи объявления -->
+<div id="form" class="modal"><div class="content">
+    <h2>Новое объявление</h2>
+    <input id="title" class="field" placeholder="Название">
+    
+    <label for="city">Город:</label>
+    <input list="cities" id="city" class="field" placeholder="Выберите или введите город...">
+    <datalist id="cities">
+        <option value="Киев">
+        <option value="Кривой Рог">
+        <option value="Харьков">
+        <option value="Одесса">
+        <option value="Днепр">
+        <option value="Запорожье">
+        <option value="Львов">
+        <option value="Николаев">
+        <option value="Винница">
+        <option value="Чернигов">
+        <option value="Полтава">
+        <option value="Черкассы">
+        <option value="Хмельницкий">
+        <option value="Черновцы">
+        <option value="Житомир">
+        <option value="Сумы">
+        <option value="Ровно">
+        <option value="Ивано-Франковск">
+        <option value="Кропивницкий">
+        <option value="Тернополь">
+        <option value="Луцк">
+        <option value="Ужгород">
+    </datalist>
+
+    <input id="price" class="field" type="number" placeholder="Цена">
+    <input id="breed" class="field" placeholder="Порода">
+    <input id="phone" class="field" type="tel" placeholder="Ваш номер">
+    <select id="category" class="field">
+        <option>Веттовары</option>
+        <option>Комбикорма</option>
+        <option>Сельхозживотные</option>
+        <option>Домашние питомцы</option>
+    </select>
+    <textarea id="desc" class="field" placeholder="Описание"></textarea>
+    <label for="photoInput" style="display:block; padding:10px; background:#e0e0e0; border-radius:5px; text-align:center; cursor:pointer;">📸 Выбрать фото</label>
+    <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="previewPhotos()">
+    <div id="previewArea" style="display:flex; gap:5px; margin-top:10px; overflow-x:auto;"></div>
+    <button id="saveBtn" class="action-btn btn-chat" onclick="saveAd()" style="width:100%; margin-top:10px;">Опубликовать</button>
+    <button onclick="hideModal('form')" style="width:100%; margin-top:10px; background:none; border:none; color:red;">Отмена</button>
+</div></div>
+
+<!-- Окна для просмотра, чатов и избранного -->
+<div id="viewModal" class="modal"><div class="content" id="viewContent"></div></div>
+
+<div id="chatModal" class="modal"><div class="content">
+    <h3>Чат</h3>
+    <div id="messages" style="height:200px; overflow-y:auto; border:1px solid #ccc; margin-bottom:10px; padding:5px;"></div>
+    <textarea id="msgText" class="field" placeholder="Сообщение..."></textarea>
+    <button class="action-btn btn-chat" onclick="sendMsg()" style="width:100%">Отправить</button>
+    <button onclick="hideModal('chatModal')" style="width:100%; margin-top:5px; background:none; border:none; color:red;">Закрыть</button>
+</div></div>
+
+<div id="myChatsModal" class="modal"><div class="content">
+    <h3>Мои чаты</h3>
+    <div id="chatsList"></div>
+    <button onclick="hideModal('myChatsModal')" style="width:100%; margin-top:10px; background:none;">Закрыть</button>
+</div></div>
+
+<div id="favModal" class="modal"><div class="content">
+    <h3>Избранное</h3>
+    <div id="favList"></div>
+    <button onclick="hideModal('favModal')" style="width:100%; margin-top:10px; background:none;">Закрыть</button>
+</div></div>
+
+<script>
+    const sb = supabase.createClient('https://qdesomzmhrghygzprftz.supabase.co', 'sb_publishable_ru6cRM3d9mYcDj7tjvAStQ_7rqIftg0');
+    
+    let ads = JSON.parse(localStorage.getItem('cached_ads') || '[]');
+    let myFavs = [], activeAdId = null, slideIdx = 0, activeCat = '', isMyMode = false, isLoaded = false;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initApp();
+    });
+
+    async function initApp() {
+        const timer = setTimeout(() => {
+            if (!isLoaded) {
+                document.getElementById('grid').innerHTML = '<p style="padding:20px; text-align:center;">Ошибка подключения к базе. Проверьте настройки RLS в Supabase.</p>';
             }
+        }, 8000);
 
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p>В каталоге поки нет товаров.</p>';
-                return;
+        await loadData();
+        clearTimeout(timer);
+        
+        isLoaded = true;
+        renderAds();
+        updateMyFavs();
+    }
+
+    async function loadData() {
+        try {
+            const { data, error } = await sb.from('ads').select('*').order('id', { ascending: false });
+            if (error) throw error;
+            if (data) {
+                ads = data;
+                localStorage.setItem('cached_ads', JSON.stringify(data));
             }
+        } catch (err) {
+            console.error("Ошибка загрузки данных из Supabase:", err);
+        }
+    }
 
-            container.innerHTML = '';
-            data.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <div class="product-image">${product.image_url ? `<img src="${product.image_url}" style="width:100%; height:100%; object-fit:cover;">` : 'Фото товара'}</div>
-                    <div class="product-info">
-                        <div>
-                            <h3 class="product-title">${product.title}</h3>
-                            <div class="product-price">${product.price} грн</div>
-                        </div>
-                        <button class="buy-btn" onclick='addToCart(${JSON.stringify(product)})'>В корзину</button>
-                    </div>
-                `;
-                container.appendChild(card);
+function renderAds() {
+    const grid = document.getElementById('grid');
+    if (!isLoaded && ads.length === 0) return;
+
+    // Получаем значения из полей поиска и города
+    const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+    const cityQuery = document.getElementById('cityFilter') ? document.getElementById('cityFilter').value : '';
+
+    // Фильтруем данные
+    let filtered = ads.filter(ad => {
+        const matchesSearch = (ad.title?.toLowerCase().includes(query) || ad.desc?.toLowerCase().includes(query));
+        const matchesCat = (activeCat === '' || ad.category === activeCat);
+        const matchesCity = (cityQuery === '' || ad.city === cityQuery);
+        
+        return matchesSearch && matchesCat && matchesCity;
+    });
+    
+    // Если включен "Мой режим"
+    if (isMyMode) {
+        const myPhone = localStorage.getItem('myPhone');
+        filtered = filtered.filter(ad => String(ad.phone).trim() === String(myPhone).trim());
+    }
+
+    // Отрисовка
+    if (filtered.length === 0) {
+        grid.innerHTML = '<p style="padding:20px; text-align:center;">Объявлений пока нет</p>';
+        return;
+    }
+
+    grid.innerHTML = filtered.map(ad => `
+        <div class="card">
+            <div onclick="openView('${ad.id}')">
+                <img src="${ad.images ? ad.images.split('|')[0] : ''}" loading="lazy">
+                    <span style="font-style: normal; font-weight: 600; color: #444444;">${ad.title}</span><br><span style="font-weight: 800; font-size: 1.1em;">${ad.price} грн</span>
+            </div>
+            <button onclick="toggleFavorite('${ad.id}')" style="margin-top:5px; width:100%; border:none; background:#eee; color: ${myFavs.includes(Number(ad.id)) ? 'red' : 'gray'}">♥</button>
+            ${isMyMode ? `<button onclick="deleteAd('${ad.id}')" style="margin-top:5px; width:100%; border:none; background:#ffeded; color:red;">Удалить</button>` : ''}
+        </div>`).join('');
+}
+
+    function resetApp() { 
+        isMyMode = false; 
+        activeCat = ''; 
+        document.getElementById('searchInput').value = ''; 
+        renderAds(); 
+    }
+
+    function filterCat(cat) { 
+        activeCat = cat; 
+        isMyMode = false; 
+        renderAds(); 
+    }
+
+    async function deleteAd(adId) {
+        if (!confirm("Вы действительно хотите удалить это объявление?")) return;
+        const { error } = await sb.from('ads').delete().eq('id', adId);
+        if (error) {
+            alert("Не удалось удалить объявление. Проверьте права.");
+        } else {
+            ads = ads.filter(a => a.id != adId);
+            renderAds();
+        }
+    }
+
+    function manageMyAds() {
+        const phone = localStorage.getItem('myPhone') || prompt("Введите ваш номер телефона для авторизации объявлений:");
+        if (!phone) return;
+        localStorage.setItem('myPhone', phone);
+        isMyMode = true; 
+        renderAds();
+    }
+
+    async function updateMyFavs() {
+        const name = localStorage.getItem('myChatName');
+        if (name) {
+            const { data } = await sb.from('favorites').select('ad_id').eq('user_name', name);
+            myFavs = data?.map(f => f.ad_id) || [];
+            renderAds();
+        }
+    }
+
+    async function toggleFavorite(adId) {
+        let name = localStorage.getItem('myChatName') || prompt("Введите ваше имя для работы с избранным:");
+        if (!name) return; 
+        localStorage.setItem('myChatName', name);
+        const idNum = Number(adId);
+        const isFav = myFavs.includes(idNum);
+        
+        if (isFav) {
+            const { data } = await sb.from('favorites').select('id').eq('ad_id', idNum).eq('user_name', name);
+            if (data?.length) await sb.from('favorites').delete().eq('id', data[0].id);
+        } else {
+            await sb.from('favorites').insert([{ ad_id: idNum, user_name: name }]);
+        }
+        updateMyFavs();
+    }
+
+    function previewPhotos() {
+        const input = document.getElementById('photoInput'), preview = document.getElementById('previewArea');
+        preview.innerHTML = '';
+        for (let file of input.files) {
+            const reader = new FileReader();
+            reader.onload = (e) => { 
+                preview.innerHTML += `<img src="${e.target.result}" style="width:60px; height:60px; object-fit:cover; border-radius:5px;">`; 
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    async function saveAd() {
+        const btn = document.getElementById('saveBtn'); 
+        btn.disabled = true;
+        const phone = document.getElementById('phone').value;
+        localStorage.setItem('myPhone', phone);
+        
+        const files = document.getElementById('photoInput').files;
+        let imgs = [];
+        
+        for (let f of files) {
+            let b64 = await new Promise(r => { 
+                let reader = new FileReader(); 
+                reader.onload = () => r(reader.result); 
+                reader.readAsDataURL(f); 
             });
+            imgs.push(b64);
         }
-
-        // Логика корзины
-        function addToCart(product) {
-            const existingItem = cart.find(item => item.id === product.id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ ...product, quantity: 1 });
-            }
-            updateCartUI();
-            alert(`Товар "${product.title}" добавлен в корзину!`);
+        
+        const adData = { 
+            title: document.getElementById('title').value, 
+            phone: phone, 
+            price: document.getElementById('price').value, 
+            desc: document.getElementById('desc').value, 
+            category: document.getElementById('category').value, 
+            images: imgs.join('|'), 
+            breed: document.getElementById('breed').value, 
+            city: document.getElementById('city').value 
+        };
+        
+        const { error } = await sb.from('ads').insert([adData]);
+        if (error) { 
+            alert("Ошибка сохранения объявления. Проверьте структуру полей и RLS."); 
+            btn.disabled = false; 
+        } else { 
+            alert("Успешно опубликовано!"); 
+            hideModal('form'); 
+            
+            // Очистка формы
+            document.getElementById('title').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('desc').value = '';
+            document.getElementById('breed').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('photoInput').value = '';
+            document.getElementById('previewArea').innerHTML = '';
+            
+            await loadData(); 
+            renderAds(); 
         }
+    }
 
-        function updateCartUI() {
-            const countSpan = document.getElementById('cart-count');
-            const itemsContainer = document.getElementById('cart-items-container');
-            const totalSpan = document.getElementById('cart-total-price');
-
-            let totalCount = 0;
-            let totalPrice = 0;
-
-            if (cart.length === 0) {
-                itemsContainer.innerHTML = '<p style="color: #A3A8A2; text-align: center; margin-top: 40px;">Корзина пуста</p>';
-            } else {
-                itemsContainer.innerHTML = '';
-                cart.forEach(item => {
-                    totalCount += item.quantity;
-                    totalPrice += item.price * item.quantity;
-
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'cart-item';
-                    itemEl.innerHTML = `
-                        <div>
-                            <strong>${item.title}</strong><br>
-                            <small>${item.price} грн × ${item.quantity}</small>
-                        </div>
-                        <button onclick="removeFromCart(${item.id})" style="background:none; border:none; color:#D4A373; cursor:pointer;">Удалить</button>
-                    `;
-                    itemsContainer.appendChild(itemEl);
-                });
-            }
-
-            countSpan.innerText = totalCount;
-            totalSpan.innerText = totalPrice + ' грн';
-        }
-
-        function removeFromCart(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            updateCartUI();
-        }
-
-        function toggleCartModal(show) {
-            const modal = document.getElementById('cartModal');
-            modal.style.display = show ? 'flex' : 'none';
-        }
-
-        function handleOverlayClick(event) {
-            if (event.target.id === 'cartModal') {
-                toggleCartModal(false);
-            }
-        }
-
-        // Оформление заказа (сохранение в Supabase)
-        async function checkout() {
-            if (cart.length === 0) {
-                alert('Корзина пуста!');
-                return;
-            }
-
-            const customerName = prompt('Введите ваше имя для заказа:');
-            if (!customerName) return;
-
-            const orderData = {
-                customer_name: customerName,
-                items: cart,
-                total_price: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                created_at: new Date()
-            };
-
-            // Отправка заказа в таблицу orders в Supabase
-            const { error } = await _supabase.from('orders').insert([orderData]);
-
-            if (error) {
-                alert('Ошибка при оформлении заказа. Попробуйте еще раз.');
-                console.error(error);
-            } else {
-                alert(`Спасибо за заказ, ${customerName}! Мы скоро с вами свяжемся.`);
-                cart = [];
-                updateCartUI();
-                toggleCartModal(false);
-            }
-        }
-
-        // Запускаем загрузку товаров при открытии страницы
-        fetchProducts();
-    </script>
-
-</body>
-</html>
+    function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function hideModal(id) { document.getEleme
