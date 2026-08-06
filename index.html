@@ -1,509 +1,431 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ЗооРынок 🐾</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Затишок Kids — Дитячий одяг</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #f2f4f5; padding-bottom: 100px; width: 100%; overflow-x: hidden; }
-        header { background: #002f34; color: white; padding: 15px; text-align: center; }
-        .search-box { padding: 10px; background: white; }
-        .search-input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
-        .categories { display: flex; gap: 10px; padding: 10px; overflow-x: auto; background: white; }
-        .cat-btn { padding: 8px 15px; border: 1px solid #002f34; border-radius: 20px; cursor: pointer; white-space: nowrap; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 15px; }
-        .card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 5px; margin-bottom: 5px; }
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: space-around; background: #002f34; padding: 10px 20px; border-radius: 35px; width: 95%; max-width: 400px; color: white; z-index: 1000; }
-        .btn-add-center { background: #ff5a5f; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px; color: white; border: none; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; align-items: center; justify-content: center; padding: 20px; }
-        .content { background: white; width: 100%; max-width: 400px; padding: 20px; border-radius: 10px; max-height: 85vh; overflow-y: auto; }
-        .field { width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-        .action-btn { flex: 1; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; text-align: center; display: block; }
-        .btn-chat { background: #002f34; color: white; }
-        .btn-call { background: #28a745; color: white; margin-left: 10px; }
-        .slider-container { position: relative; width: 100%; height: 250px; overflow: hidden; border-radius: 5px; margin-bottom: 10px; }
-        .slider-img { width: 100%; height: 250px; object-fit: cover; display: none; }
-        .slider-img.active { display: block; }
-        .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px; cursor: pointer; }
-        
-    .photo-modal {
-    display: none;
-    position: fixed;
-    z-index: 99999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.98);
-    justify-content: center;
-    align-items: center;
-    /* Важно: отключаем стандартный скролл модального окна */
-    overflow: hidden;
-}
+        :root {
+            --bg-color: #F7F5F0;
+            --card-bg: #FFFFFF;
+            --text-primary: #2C3531;
+            --text-secondary: #7C8580;
+            --accent-color: #8EA89D;
+            --accent-hover: #739083;
+            --border-color: #E3E0D8;
+            --radius: 12px;
+        }
 
-.photo-modal-container {
-    /* Контейнер занимает весь экран, картинка будет внутри него */
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-.photo-modal-content {
-    /* Картинка будет масштабироваться библиотекой */
-    max-width: 90%;
-    max-height: 90%;
-    object-fit: contain;
-    cursor: grab; /* Курсор меняется, показывая, что можно двигать */
-}
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
 
-.photo-modal-content.is-grabbing {
-    cursor: grabbing; /* Курсор при перетаскивании */
-}        
-        
-/* Кнопки «влево-вправо» поверх увеличенного фото */
-.modal-nav-btn {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: wait;
-    border: none;
-    font-size: 30px;
-    padding: 15px 20px;
-    cursor: pointer;
-    z-index: 100000;
-    border-radius: 5px;
-}
-.modal-prev { left: 10px; }
-.modal-next { right: 10px; }       
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-/* Аккуратный красный крестик */
-.photo-modal-close {
-    position: fixed;
-    top: 15px;
-    right: 20px;
-    color: #ff0000 !important;
-    font-size: 36px !important;  /* Уменьшили размер крестика */
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 999999;
-    background: rgba(0, 0, 0, 0.5);
-    width: 45px;                 /* Уменьшили размер круглой кнопки */
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    line-height: 1;
-}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
 
-/* Компактные кнопки «влево-вправо» */
-.modal-nav-btn {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.4);
-    color: white;
-    border: none;
-    font-size: 20px;             /* Сделали стрелочки заметно меньше */
-    padding: 10px 14px;          /* Уменьшили саму кнопку */
-    cursor: pointer;
-    z-index: 100000;
-    border-radius: 50%;          /* Сделали их круглыми и аккуратными */
-}
-.modal-prev { left: 10px; }
-.modal-next { right: 10px; }       
-        
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent-color);
+        }
+
+        .btn-admin {
+            background-color: transparent;
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-admin:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .hero {
+            padding: 40px 0 20px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+            margin: 40px 0 60px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+        }
+
+        .product-img {
+            width: 100%;
+            height: 220px;
+            background-color: #EFECE6;
+            object-fit: cover;
+        }
+
+        .product-content {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-category {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .product-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: auto;
+            margin-bottom: 12px;
+        }
+
+        .no-products {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* Модальне вікно адмінки */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 53, 49, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .admin-modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .admin-modal h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        textarea {
+            resize: vertical;
+            height: 90px;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-hover);
+        }
     </style>
 </head>
 <body>
-    
-    <div id="photoModal" class="photo-modal" onclick="closePhotoModal()">
-    <span class="photo-modal-close" onclick="closePhotoModal()">&times;</span>
-    
-    <!-- Новая кнопка "Предыдущее" -->
-    <button class="modal-nav-btn modal-prev" onclick="event.stopPropagation(); changeModalSlide(-1)">&#10094;</button>
-    
-    <!-- Новый контейнер для зума -->
-    <div class="photo-modal-container">
-        <img class="photo-modal-content" id="modalImage" onclick="event.stopPropagation()">
+
+    <header>
+        <div class="container header-flex">
+            <a href="#" class="logo">Затишок<span>Kids</span></a>
+            <button class="btn-admin" id="open-admin">Додати товар (Адмін)</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>Якісний та зручний одяг для малюків</h1>
+            <p>Підібрано з турботою та любов'ю до деталей</p>
+        </section>
+
+        <div class="products-grid" id="products-container">
+            <div class="no-products">Завантаження товарів...</div>
+        </div>
     </div>
-    
-    <!-- Новая кнопка "Следующее" -->
-    <button class="modal-nav-btn modal-next" onclick="event.stopPropagation(); changeModalSlide(1)">&#10095;</button>
+
+    <!-- Модальне вікно адмін-панелі -->
+    <div class="modal-overlay" id="admin-modal">
+        <div class="admin-modal">
+            <button class="close-modal" id="close-admin">&times;</button>
+            <h2>Додати новий товар</h2>
+            
+            <form id="add-product-form">
+                <div class="form-group">
+                    <label for="title">Назва товару</label>
+                    <input type="text" id="title" required placeholder="Наприклад: Комбінезон велюровий">
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Категорія</label>
+                    <select id="category">
+                        <option value="Немовлята">Немовлята</option>
+                        <option value="Костюми">Костюми</option>
+                        <option value="Верхній одяг">Верхній одяг</option>
+                        <option value="Взуття">Взуття</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Ціна (грн)</label>
+                    <input type="number" id="price" required placeholder="450">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Опис</label>
+                    <textarea id="description" placeholder="Стан, склад тканини, розмір..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Фотографія товару</label>
+                    <input type="file" id="image" accept="image/*">
+                </div>
+
+                <button type="submit" class="btn-submit" id="submit-btn">Опублікувати оголошення</button>
+            </form>
+        </div>
     </div>
-    
-    
-<header><h1>ЗооРынок 🐾</h1></header>
 
-<div class="search-box">
-    <input type="text" id="searchInput" class="search-input" placeholder="Поиск..." oninput="renderAds()">
-    
-    <select id="cityFilter" class="search-input" onchange="renderAds()" style="margin-top: 10px; width: 100%;">
-        <option value="">Все города</option>
-        <option value="Киев">Киев</option>
-        <option value="Кривой Рог">Кривой Рог</option>
-        <option value="Харьков">Харьков</option>
-        <option value="Одесса">Одесса</option>
-        <option value="Днепр">Днепр</option>
-        <option value="Запорожье">Запорожье</option>
-        <option value="Львов">Львов</option>
-        <option value="Николаев">Николаев</option>
-        <option value="Винница">Винница</option>
-        <option value="Чернигов">Чернигов</option>
-        <option value="Полтава">Полтава</option>
-        <option value="Черкассы">Черкассы</option>
-        <option value="Хмельницкий">Хмельницкий</option>
-        <option value="Черновцы">Черновцы</option>
-        <option value="Житомир">Житомир</option>
-        <option value="Сумы">Сумы</option>
-        <option value="Ровно">Ровно</option>
-        <option value="Ивано-Франковск">Ивано-Франковск</option>
-        <option value="Кропивницкий">Кропивницкий</option>
-        <option value="Кропивницкий">Кропивницкий</option>
-        <option value="Тернополь">Тернополь</option>
-        <option value="Луцк">Луцк</option>
-        <option value="Ужгород">Ужгород</option>
-    </select>
-</div>
-    
+    <!-- Підключаємо Supabase SDK та логіку -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<div class="categories">
-    <div class="cat-btn" onclick="resetApp()">Все</div>
-    <div class="cat-btn" onclick="filterCat('Веттовары')">Веттовары</div>
-    <div class="cat-btn" onclick="filterCat('Комбикорма')">Комбикорма</div>
-    <div class="cat-btn" onclick="filterCat('Сельхозживотные')">Сельхозживотные</div>
-    <div class="cat-btn" onclick="filterCat('Домашние питомцы')">Питомцы</div>
-</div>
+        // Кнопки управління модальним вікном адмінки
+        const modal = document.getElementById('admin-modal');
+        document.getElementById('open-admin').addEventListener('click', () => modal.classList.add('active'));
+        document.getElementById('close-admin').addEventListener('click', () => modal.classList.remove('active'));
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
 
-<div class="grid" id="grid"><p style="padding:20px; text-align:center;">Загрузка...</p></div>
+        // Завантаження товарів на головну сторінку
+        async function loadProducts() {
+            const container = document.getElementById('products-container');
+            
+            const { data, error } = await supabaseClient
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-<div class="bottom-nav">
-    <button onclick="resetApp()" style="background:none; border:none; color:white; font-size:24px;">🏠</button>
-    <button onclick="showFavorites()" style="background:none; border:none; color:#ff5a5f; font-size:26px;">♥️</button>
-    <button class="btn-add-center" onclick="showModal('form')">+</button>
-    <button id="chatNavBtn"onclick="showMyChats()" style="background:none; border:none; color:white; font-size:24px; position:relative;">
-    💬<span id="chatBadge" style="display:none; position:absolute; top:0; right:0; background:red; width:10px; height:10px; border-radius:50%;"></span>
-    </button>
-    
-    <button onclick="manageMyAds()" style="background:none; border:none; color:white; font-size:24px;">👤</button>
-</div>
-
-<!-- Модальное окно формы подачи объявления -->
-<div id="form" class="modal"><div class="content">
-    <h2>Новое объявление</h2>
-    <input id="title" class="field" placeholder="Название">
-    
-    <label for="city">Город:</label>
-    <input list="cities" id="city" class="field" placeholder="Выберите или введите город...">
-    <datalist id="cities">
-        <option value="Киев">
-        <option value="Кривой Рог">
-        <option value="Харьков">
-        <option value="Одесса">
-        <option value="Днепр">
-        <option value="Запорожье">
-        <option value="Львов">
-        <option value="Николаев">
-        <option value="Винница">
-        <option value="Чернигов">
-        <option value="Полтава">
-        <option value="Черкассы">
-        <option value="Хмельницкий">
-        <option value="Черновцы">
-        <option value="Житомир">
-        <option value="Сумы">
-        <option value="Ровно">
-        <option value="Ивано-Франковск">
-        <option value="Кропивницкий">
-        <option value="Тернополь">
-        <option value="Луцк">
-        <option value="Ужгород">
-    </datalist>
-
-    <input id="price" class="field" type="number" placeholder="Цена">
-    <input id="breed" class="field" placeholder="Порода">
-    <input id="phone" class="field" type="tel" placeholder="Ваш номер">
-    <select id="category" class="field">
-        <option>Веттовары</option>
-        <option>Комбикорма</option>
-        <option>Сельхозживотные</option>
-        <option>Домашние питомцы</option>
-    </select>
-    <textarea id="desc" class="field" placeholder="Описание"></textarea>
-    <label for="photoInput" style="display:block; padding:10px; background:#e0e0e0; border-radius:5px; text-align:center; cursor:pointer;">📸 Выбрать фото</label>
-    <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="previewPhotos()">
-    <div id="previewArea" style="display:flex; gap:5px; margin-top:10px; overflow-x:auto;"></div>
-    <button id="saveBtn" class="action-btn btn-chat" onclick="saveAd()" style="width:100%; margin-top:10px;">Опубликовать</button>
-    <button onclick="hideModal('form')" style="width:100%; margin-top:10px; background:none; border:none; color:red;">Отмена</button>
-</div></div>
-
-<!-- Окна для просмотра, чатов и избранного -->
-<div id="viewModal" class="modal"><div class="content" id="viewContent"></div></div>
-
-<div id="chatModal" class="modal"><div class="content">
-    <h3>Чат</h3>
-    <div id="messages" style="height:200px; overflow-y:auto; border:1px solid #ccc; margin-bottom:10px; padding:5px;"></div>
-    <textarea id="msgText" class="field" placeholder="Сообщение..."></textarea>
-    <button class="action-btn btn-chat" onclick="sendMsg()" style="width:100%">Отправить</button>
-    <button onclick="hideModal('chatModal')" style="width:100%; margin-top:5px; background:none; border:none; color:red;">Закрыть</button>
-</div></div>
-
-<div id="myChatsModal" class="modal"><div class="content">
-    <h3>Мои чаты</h3>
-    <div id="chatsList"></div>
-    <button onclick="hideModal('myChatsModal')" style="width:100%; margin-top:10px; background:none;">Закрыть</button>
-</div></div>
-
-<div id="favModal" class="modal"><div class="content">
-    <h3>Избранное</h3>
-    <div id="favList"></div>
-    <button onclick="hideModal('favModal')" style="width:100%; margin-top:10px; background:none;">Закрыть</button>
-</div></div>
-
-<script>
-    const sb = supabase.createClient('https://qdesomzmhrghygzprftz.supabase.co', 'sb_publishable_ru6cRM3d9mYcDj7tjvAStQ_7rqIftg0');
-    
-    let ads = JSON.parse(localStorage.getItem('cached_ads') || '[]');
-    let myFavs = [], activeAdId = null, slideIdx = 0, activeCat = '', isMyMode = false, isLoaded = false;
-
-    document.addEventListener('DOMContentLoaded', () => {
-        initApp();
-    });
-
-    async function initApp() {
-        const timer = setTimeout(() => {
-            if (!isLoaded) {
-                document.getElementById('grid').innerHTML = '<p style="padding:20px; text-align:center;">Ошибка подключения к базе. Проверьте настройки RLS в Supabase.</p>';
+            if (error) {
+                container.innerHTML = `<div class="no-products">Помилка завантаження: ${error.message}</div>`;
+                return;
             }
-        }, 8000);
 
-        await loadData();
-        clearTimeout(timer);
-        
-        isLoaded = true;
-        renderAds();
-        updateMyFavs();
-    }
-
-    async function loadData() {
-        try {
-            const { data, error } = await sb.from('ads').select('*').order('id', { ascending: false });
-            if (error) throw error;
-            if (data) {
-                ads = data;
-                localStorage.setItem('cached_ads', JSON.stringify(data));
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="no-products">Поки що немає жодного оголошення. Натисніть кнопку "Додати товар" зверху!</div>`;
+                return;
             }
-        } catch (err) {
-            console.error("Ошибка загрузки данных из Supabase:", err);
-        }
-    }
 
-function renderAds() {
-    const grid = document.getElementById('grid');
-    if (!isLoaded && ads.length === 0) return;
-
-    // Получаем значения из полей поиска и города
-    const query = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
-    const cityQuery = document.getElementById('cityFilter') ? document.getElementById('cityFilter').value : '';
-
-    // Фильтруем данные
-    let filtered = ads.filter(ad => {
-        const matchesSearch = (ad.title?.toLowerCase().includes(query) || ad.desc?.toLowerCase().includes(query));
-        const matchesCat = (activeCat === '' || ad.category === activeCat);
-        const matchesCity = (cityQuery === '' || ad.city === cityQuery);
-        
-        return matchesSearch && matchesCat && matchesCity;
-    });
-    
-    // Если включен "Мой режим"
-    if (isMyMode) {
-        const myPhone = localStorage.getItem('myPhone');
-        filtered = filtered.filter(ad => String(ad.phone).trim() === String(myPhone).trim());
-    }
-
-    // Отрисовка
-    if (filtered.length === 0) {
-        grid.innerHTML = '<p style="padding:20px; text-align:center;">Объявлений пока нет</p>';
-        return;
-    }
-
-    grid.innerHTML = filtered.map(ad => `
-        <div class="card">
-            <div onclick="openView('${ad.id}')">
-                <img src="${ad.images ? ad.images.split('|')[0] : ''}" loading="lazy">
-                    <span style="font-style: normal; font-weight: 600; color: #444444;">${ad.title}</span><br><span style="font-weight: 800; font-size: 1.1em;">${ad.price} грн</span>
-            </div>
-            <button onclick="toggleFavorite('${ad.id}')" style="margin-top:5px; width:100%; border:none; background:#eee; color: ${myFavs.includes(Number(ad.id)) ? 'red' : 'gray'}">♥</button>
-            ${isMyMode ? `<button onclick="deleteAd('${ad.id}')" style="margin-top:5px; width:100%; border:none; background:#ffeded; color:red;">Удалить</button>` : ''}
-        </div>`).join('');
-}
-
-    function resetApp() { 
-        isMyMode = false; 
-        activeCat = ''; 
-        document.getElementById('searchInput').value = ''; 
-        renderAds(); 
-    }
-
-    function filterCat(cat) { 
-        activeCat = cat; 
-        isMyMode = false; 
-        renderAds(); 
-    }
-
-    async function deleteAd(adId) {
-        if (!confirm("Вы действительно хотите удалить это объявление?")) return;
-        const { error } = await sb.from('ads').delete().eq('id', adId);
-        if (error) {
-            alert("Не удалось удалить объявление. Проверьте права.");
-        } else {
-            ads = ads.filter(a => a.id != adId);
-            renderAds();
-        }
-    }
-
-    function manageMyAds() {
-        const phone = localStorage.getItem('myPhone') || prompt("Введите ваш номер телефона для авторизации объявлений:");
-        if (!phone) return;
-        localStorage.setItem('myPhone', phone);
-        isMyMode = true; 
-        renderAds();
-    }
-
-    async function updateMyFavs() {
-        const name = localStorage.getItem('myChatName');
-        if (name) {
-            const { data } = await sb.from('favorites').select('ad_id').eq('user_name', name);
-            myFavs = data?.map(f => f.ad_id) || [];
-            renderAds();
-        }
-    }
-
-    async function toggleFavorite(adId) {
-        let name = localStorage.getItem('myChatName') || prompt("Введите ваше имя для работы с избранным:");
-        if (!name) return; 
-        localStorage.setItem('myChatName', name);
-        const idNum = Number(adId);
-        const isFav = myFavs.includes(idNum);
-        
-        if (isFav) {
-            const { data } = await sb.from('favorites').select('id').eq('ad_id', idNum).eq('user_name', name);
-            if (data?.length) await sb.from('favorites').delete().eq('id', data[0].id);
-        } else {
-            await sb.from('favorites').insert([{ ad_id: idNum, user_name: name }]);
-        }
-        updateMyFavs();
-    }
-
-    function previewPhotos() {
-        const input = document.getElementById('photoInput'), preview = document.getElementById('previewArea');
-        preview.innerHTML = '';
-        for (let file of input.files) {
-            const reader = new FileReader();
-            reader.onload = (e) => { 
-                preview.innerHTML += `<img src="${e.target.result}" style="width:60px; height:60px; object-fit:cover; border-radius:5px;">`; 
-            }
-            reader.readAsDataURL(file);
-        }
-    }
-
-    async function saveAd() {
-        const btn = document.getElementById('saveBtn'); 
-        btn.disabled = true;
-        const phone = document.getElementById('phone').value;
-        localStorage.setItem('myPhone', phone);
-        
-        const files = document.getElementById('photoInput').files;
-        let imgs = [];
-        
-        for (let f of files) {
-            let b64 = await new Promise(r => { 
-                let reader = new FileReader(); 
-                reader.onload = () => r(reader.result); 
-                reader.readAsDataURL(f); 
+            container.innerHTML = '';
+            data.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image_url || 'https://via.placeholder.com/300x220?text=No+Photo'}" alt="${product.title}" class="product-img">
+                    <div class="product-content">
+                        <span class="product-category">${product.category}</span>
+                        <h3 class="product-title">${product.title}</h3>
+                        <div class="product-price">${product.price} грн</div>
+                    </div>
+                `;
+                container.appendChild(card);
             });
-            imgs.push(b64);
         }
-        
-        const adData = { 
-            title: document.getElementById('title').value, 
-            phone: phone, 
-            price: document.getElementById('price').value, 
-            desc: document.getElementById('desc').value, 
-            category: document.getElementById('category').value, 
-            images: imgs.join('|'), 
-            breed: document.getElementById('breed').value, 
-            city: document.getElementById('city').value 
-        };
-        
-        const { error } = await sb.from('ads').insert([adData]);
-        if (error) { 
-            alert("Ошибка сохранения объявления. Проверьте структуру полей и RLS."); 
-            btn.disabled = false; 
-        } else { 
-            alert("Успешно опубликовано!"); 
-            hideModal('form'); 
+
+        // Обробка форми додавання товару
+        document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            // Очистка формы
-            document.getElementById('title').value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('desc').value = '';
-            document.getElementById('breed').value = '';
-            document.getElementById('city').value = '';
-            document.getElementById('photoInput').value = '';
-            document.getElementById('previewArea').innerHTML = '';
-            
-            await loadData(); 
-            renderAds(); 
-        }
-    }
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.textContent = 'Зберігається...';
+            submitBtn.disabled = true;
 
-    function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+            const title = document.getElementById('title').value;
+            const category = document.getElementById('category').value;
+            const price = Number(document.getElementById('price').value);
+            const description = document.getElementById('description').value;
+            const imageFile = document.getElementById('image').files[0];
 
+            let imageUrl = '';
 
-    
-        // Зум двумя пальцами
-        let currentDistance = Math.hypot(
-            e.touches[0].pageX - e.touches[1].pageX,
-            e.touches[0].pageY - e.touches[1].pageY
-        );
-        
-        let factor = currentDistance / initialDistance;
-        initialDistance = currentDistance;
-        
-        scale *= factor;
-        scale = Math.min(Math.max(scale, 1), 4); // Ограничение: от 1x до 4x
-        updateImageTransform();
-        
-    } else if (e.touches.length === 1 && panning && scale > 1) {
-        // Перетаскивание увеличенной картинки
-        pointX = e.touches[0].clientX - startX;
-        pointY = e.touches[0].clientY - startY;
-        updateImageTransform();
-    }
-}, { passive: false });
+            if (imageFile) {
+                const fileName = `${Date.now()}_${imageFile.name}`;
+                const { error: uploadError } = await supabaseClient.storage
+                    .from('product-images')
+                    .upload(fileName, imageFile);
 
-modalImg.addEventListener('touchend', (e) => {
-    if (e.touches.length < 2) {
-        initialDistance = 0;
-    }
-    if (e.touches.length === 0) {
-        panning = false;
-    }
-    // Если случайно уменьшили меньше исходного — возвращаем к 1x
-    if (scale < 1) {
-        resetZoom();
-    }
-});    
-       
-</script>
+                if (uploadError) {
+                    alert('Помилка завантаження фото: ' + uploadError.message);
+                    submitBtn.textContent = 'Опублікувати оголошення';
+                    submitBtn.disabled = false;
+                    return;
+                }
+
+                const { data: publicUrlData } = supabaseClient.storage
+                    .from('product-images')
+                    .getPublicUrl(fileName);
+                
+                imageUrl = publicUrlData.publicUrl;
+            }
+
+            const { error: insertError } = await supabaseClient
+                .from('products')
+                .insert([{ title, category, price, description, image_url: imageUrl }]);
+
+            if (insertError) {
+                alert('Помилка збереження товару: ' + insertError.message);
+                submitBtn.textContent = 'Опублікувати оголошення';
+                submitBtn.disabled = false;
+            } else {
+                alert('Товар успішно додано!');
+                modal.classList.remove('active');
+                document.getElementById('add-product-form').reset();
+                submitBtn.textContent = 'Опублікувати оголошення';
+                submitBtn.disabled = false;
+                loadProducts(); // Оновлюємо список товарів на сторінці без перезавантаження
+            }
+        });
+
+        // Завантажуємо товари при відкритті сторінки
+        loadProducts();
+    </script>
 </body>
 </html>
-
