@@ -831,27 +831,14 @@ function toggleZoom(img) {
         img.style.cursor = 'zoom-out';
     }
 }
-
-           // Гарантований запуск одразу після завантаження сторінки
-window.addEventListener('DOMContentLoaded', () => {
-    console.log("Сторінка завантажена, викликаємо loadProducts...");
+     
+// Гарантований запуск одразу
+if (document.readyState === 'complete') {
     loadProducts();
-});
-
-// Також дублюємо виклик одразу, раптом подія вже минула
-setTimeout(() => {
-    const container = document.getElementById('products-container');
-    if (container && container.innerHTML.includes('Завантаження товарів')) {
-        loadProducts();
-    }
-}, 500);
-
-        window.addEventListener('DOMContentLoaded', () => {
-    if (typeof loadProducts === 'function') {
-        loadProducts();
-    }
-});
-           
+} else {
+    window.addEventListener('load', loadProducts);
+}
+        
     </script>
 </body>
 </html>
