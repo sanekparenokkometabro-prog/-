@@ -268,7 +268,7 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
-            display: none; /* Показуємо тільки якщо введено пароль адміна */
+            display: none;
         }
 
         .detail-gallery {
@@ -345,7 +345,6 @@
             <button class="close-modal" id="close-admin">&times;</button>
             <h2 style="margin-bottom: 20px;" id="admin-modal-title">Вхід для адміністратора</h2>
             
-            <!-- Форма пароля -->
             <div id="auth-section">
                 <div class="form-group">
                     <label for="admin-pass">Введіть пароль доступу</label>
@@ -354,7 +353,6 @@
                 <button class="btn-submit" id="check-pass-btn">Увійти</button>
             </div>
 
-            <!-- Форма додавання товару (прихована до введення пароля) -->
             <form id="add-product-form" style="display: none;">
                 <p style="color: var(--accent-color); margin-bottom: 15px; font-weight: 600;">✓ Доступ дозволено</p>
                 <div class="form-group">
@@ -417,12 +415,10 @@
         const SUPABASE_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ВСТУПНИЙ ПАРОЛЬ ДЛЯ АДМІНІСТРАТОРА (зміни за бажанням)
         const ADMIN_SECRET = '12345'; 
         let isAdminLoggedIn = false;
         let currentProductId = null;
 
-        // Управління модалкою адмінки
         const modal = document.getElementById('admin-modal');
         document.getElementById('open-admin').addEventListener('click', () => {
             modal.classList.add('active');
@@ -437,7 +433,6 @@
         });
         document.getElementById('close-admin').addEventListener('click', () => modal.classList.remove('active'));
 
-        // Перевірка пароля
         document.getElementById('check-pass-btn').addEventListener('click', () => {
             const pass = document.getElementById('admin-pass').value;
             if (pass === ADMIN_SECRET) {
@@ -449,7 +444,6 @@
             }
         });
 
-        // Завантаження товарів
         async function loadProducts() {
             const container = document.getElementById('products-container');
             const { data, error } = await supabaseClient
@@ -470,14 +464,19 @@
             container.innerHTML = '';
             data.forEach(product => {
                 let imgs = parseImages(product.image_url);
-                let firstImg = imgs.length > 0 ? imgs[0] : 'https://via.placeholder.com/300x220?text=No+Photo';
+                let imagesHtml = '';
+                if (imgs.length > 0) {
+                    imgs.forEach(url => {
+                        imagesHtml += `<img src="${url}" alt="${product.title}">`;
+                    });
+                } else {
+                    imagesHtml = `<img src="https://via.placeholder.com/300x220?text=No+Photo" alt="No Photo">`;
+                }
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
                 card.innerHTML = `
-                    <div class="product-gallery">
-                        <img src="${firstImg}" alt="${product.title}">
-                    </div>
+                    <div class="product-gallery">${imagesHtml}</div>
                     <div class="product-content">
                         <span class="product-category">${product.category}</span>
                         <h3 class="product-title">${product.title}</h3>
@@ -489,26 +488,20 @@
             });
         }
 
-                function parseImages(imgField) {
+        function parseImages(imgField) {
             if (!imgField) return [];
-            // Якщо це вже масив
             if (Array.isArray(imgField)) return imgField;
-            
-            // Якщо це рядок, спробуємо розпарсити як JSON
             if (typeof imgField === 'string') {
                 try {
                     let parsed = JSON.parse(imgField);
                     if (Array.isArray(parsed)) return parsed;
                     if (typeof parsed === 'string') return [parsed];
                 } catch(e) {}
-                
-                // Якщо це просто посилання або через кому/пробіл
                 return imgField.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
             }
             return [];
-                }
+        }
 
-        // Відкриття детального перегляду оголошення
         const detailModal = document.getElementById('detail-modal');
         document.getElementById('close-detail').addEventListener('click', () => detailModal.classList.remove('active'));
 
@@ -532,7 +525,6 @@
                 galleryContainer.appendChild(img);
             });
 
-            // Кнопка видалення доступна лише якщо введено пароль адміна
             const deleteBtn = document.getElementById('delete-btn');
             if (isAdminLoggedIn) {
                 deleteBtn.style.display = 'block';
@@ -543,7 +535,6 @@
             detailModal.classList.add('active');
         }
 
-        // Видалення товару
         document.getElementById('delete-btn').addEventListener('click', async () => {
             if (!confirm('Ви дійсно хочете видалити це оголошення?')) return;
 
@@ -561,7 +552,6 @@
             }
         });
 
-        // Додавання нового товару через форму
         document.getElementById('add-product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submit-btn');
@@ -579,6 +569,7 @@
             for (let i = 0; i < imageFiles.length; i++) {
                 const file = imageFiles[i];
                 const fileName = `${Date.now()}_${i}_${file.name}`;
+                // Використовуємо правильну назву бакета 'images'
                 const { error: uploadError } = await supabaseClient.storage
                     .from('images')
                     .upload(fileName, file);
@@ -588,38 +579,11 @@
                         .from('images')
                         .getPublicUrl(fileName);
                     uploadedUrls.push(publicUrlData.publicUrl);
+                } else {
+                    alert('Помилка завантаження фото: ' + uploadError.message);
                 }
             }
 
-        const { error: insertError } = await supabaseClient
+            const { error: insertError } = await supabaseClient
                 .from('products')
-                .insert([{ title, category, price, description, image_url: uploadedUrls }]);
-
-            if (insertError) {
-                alert('Помилка збереження товару: ' + insertError.message);
-                submitBtn.textContent = 'Опублікувати оголошення';
-                submitBtn.disabled = false;
-            } else {
-                alert('Товар успішно додано!');
-                modal.classList.remove('active');
-                document.getElementById('add-product-form').reset();
-                submitBtn.textContent = 'Опублікувати оголошення';
-                submitBtn.disabled = false;
-                loadProducts();
-            }
-        });
-
-        // Зумування картинок
-        const zoomModal = document.getElementById('zoom-modal');
-        const zoomedImg = document.getElementById('zoomed-img');
-        function openZoom(url) {
-            zoomedImg.src = url;
-            zoomModal.classList.add('active');
-        }
-        document.getElementById('close-zoom').addEventListener('click', () => zoomModal.classList.remove('active'));
-        zoomModal.addEventListener('click', (e) => { if(e.target === zoomModal) zoomModal.classList.remove('active'); });
-
-        loadProducts();
-    </script>
-</body>
-</html>
+                .insert([{ title, category, price, description, image_ur
