@@ -411,10 +411,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-                const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
+        const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
+
         const ADMIN_SECRET = '12345'; 
         let isAdminLoggedIn = false;
         let currentProductId = null;
@@ -445,77 +445,51 @@
         });
 
         async function loadProducts() {
-    let container = document.getElementById('products-container') || document.getElementById('container');
-    
-    // Якщо на сторінці взагалі немає контейнера, створюємо його автоматично під заголовком!
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'products-container';
-        container.style.cssText = 'display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px;';
-        document.body.appendChild(container);
-    }
-    container.innerHTML = '<div class="no-products">Завантаження товарів...</div>';
+            const container = document.getElementById('products-container');
+            const { data, error } = await supabaseClient
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-    try {
-        // Цей запит використовує правильний supabaseClient з ключами, прописаними вище
-        const { data, error } = await supabaseClient
-            .from('products')
-            .select('*')
-            .order('created_at', { ascending: false });
-            
-        if (error) {
-            throw error;
-        }
-
-        if (!Array.isArray(data) || data.length === 0) {
-            container.innerHTML = '<div class="no-products">Товарів поки немає</div>';
-            return;
-        }
-        
-        if (!Array.isArray(data)) {
-            container.innerHTML = `<p style="color: red; text-align: center;">Помилка даних: ${JSON.stringify(data)}</p>`;
-            return;
-        }
-
-        if (data.length === 0) {
-            container.innerHTML = '<p style="text-align: center;">Товарів поки немає</p>';
-            return;
-        }
-
-                container.innerHTML = '';
-        data.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.style.cssText = 'background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; margin-bottom: 15px;';
-            
-            let imageUrl = 'https://via.placeholder.com/300';
-            try {
-                let parsed = JSON.parse(product.image_url);
-                if (Array.isArray(parsed) && parsed.length > 0) imageUrl = parsed[0];
-                else if (typeof parsed === 'string') imageUrl = parsed;
-            } catch (e) {
-                if (product.image_url) imageUrl = product.image_url;
+            if (error) {
+                container.innerHTML = `<div class="no-products">Помилка завантаження: ${error.message}</div>`;
+                return;
             }
 
-            card.innerHTML = `
-                <img src="${imageUrl}" alt="${product.title}" style="width: 100%; height: 200px; object-fit: cover;">
-                <div style="padding: 15px;">
-                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #333;">${product.title}</h3>
-                    <p style="margin: 0; font-weight: bold; color: #2c3e50; font-size: 16px;">${product.price} грн</p>
-                </div>
-            `;
-            
-            card.addEventListener('click', () => {
-                if (typeof openDetailModal === 'function') {
-                    openDetailModal(product);
-                } else {
-                    alert(product.title + ' - ' + product.price + ' грн');
-                }
-            });
-            
-            container.appendChild(card);
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="no-products">Поки що немає жодного оголошення.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(product => {
+                let imgs = parseImages(product.image_url);
+                let imagesHtml = '';
+                if (imgs.length > 0) {
+                    imgs.forEach(url => {
+                            if (imgs.length > 0) {
+        imgs.forEach(url => {
+            imagesHtml += `<img src="${url}" alt="${product.title}" onclick="event.stopPropagation(); openZoom('${url}', '${product.image_url.replace(/'/g, "\\'")}')" style="cursor: pointer;">`;
         });
-        
+    } else {
+        imagesHtml = `<img src="https://via.placeholder.com/300" alt="No image">`;
+                            }          
+
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-gallery">${imagesHtml}</div>
+                    <div class="product-content">
+                        <span class="product-category">${product.category}</span>
+                        <h3 class="product-title">${product.title}</h3>
+                        <div class="product-price">${product.price} грн</div>
+                    </div>
+                `;
+                card.addEventListener('click', () => openDetailModal(product));
+                container.appendChild(card);
+            });
+        }
+
         function parseImages(imgField) {
             if (!imgField) return [];
             if (Array.isArray(imgField)) return imgField;
@@ -611,8 +585,8 @@
                     alert('Помилка завантаження фото: ' + uploadError.message);
                 }
                         }
-            
-const { error: insertError } = await supabaseClient
+
+            const { error: insertError } = await supabaseClient
                 .from('products')
                 .insert([{ title, category, price, description, image_url: uploadedUrls }]);
 
@@ -636,118 +610,6 @@ const { error: insertError } = await supabaseClient
 let currentLightboxIndex = 0;
 
 function openZoom(imageUrl, allImagesString = '') {
-    currentLightboxImages = [];
-    
-    // Спробуємо розпарсити або розділити рядок на масив зображень
-    if (allImagesString) {
-        try {
-            let parsed = JSON.parse(allImagesString);
-            if (Array.isArray(parsed)) {
-                currentLightboxImages = parsed;
-            } else if (typeof parsed === 'string') {
-                currentLightboxImages = [parsed];
-            }
-        } catch (e) {
-            // Якщо це не JSON, спробуємо розділити комами або пробілами
-            currentLightboxImages = allImagesString.split(/[\s,]+/).filter(Boolean);
-        }
-    }
-    
-    // Якщо масив все ще порожній або має 1 елемент, але клікнули конкретний URL — додаємо його
-    if (currentLightboxImages.length === 0) {
-        currentLightboxImages = [imageUrl];
-    }
-    
-    // Гарантуємо, що поточна картинка точно є в списку, щоб стрілочки працювали
-    currentLightboxIndex = currentLightboxImages.indexOf(imageUrl);
-    if (currentLightboxIndex === -1) {
-        currentLightboxImages.unshift(imageUrl);
-        currentLightboxIndex = 0;
-    }
-
-    updateZoomModalContent();
-    
-    const zoomModal = document.getElementById('zoom-modal');
-    if (zoomModal) {
-        zoomModal.classList.add('active');
-    }
-}
-        
-    const hasMultiple = currentLightboxImages.length > 1;
-
-        controlsContainer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000;';
-    controlsContainer.innerHTML = `
-        <div onclick="document.getElementById('zoom-modal').classList.remove('active')" style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: #ff4d4d; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-            <span style="color: #fff; font-size: 28px; font-weight: bold; line-height: 1;">&times;</span>
-        </div>
-
-        ${hasMultiple ? `
-            <div onclick="prevZoomImage(event)" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto;">
-                <span style="color: #fff; font-size: 30px; font-weight: bold; line-height: 1;">&#10094;</span>
-            </div>
-            <div onclick="nextZoomImage(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto;">
-                <span style="color: #fff; font-size: 30px; font-weight: bold; line-height: 1;">&#10095;</span>
-            </div>
-        ` : ''}
-    `;      
-
-function prevZoomImage(event) {
-    event.stopPropagation();
-    currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
-    updateZoomModalContent();
-}
-
-function nextZoomImage(event) {
-    event.stopPropagation();
-    currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxImages.length;
-    updateZoomModalContent();
-}
-        
-        document.getElementById('close-zoom').addEventListener('click', () => zoomModal.classList.remove('active'));
-        zoomModal.addEventListener('click', (e) => { if(e.target === zoomModal) zoomModal.classList.remove('active'); });
-
-        loadProducts();
-
-        // Функція для відображення списку товарів з підтримкою прокрутки фотографій
-function displayProducts(productsToDisplay) {
-    const container = document.getElementById('products-container');
-    if (!container) return;
-    
-    container.innerHTML = '';
-
-    productsToDisplay.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
-        
-        // Унікальний ID для конкретного товару, щоб стрілочки керували саме його картинкою
-        const sliderId = 'slider_' + (product.id || Math.random().toString(36).substr(2, 9));
-        
-        let imgTags = imgs.map((url, idx) => 
-            `<img src="${url}" alt="${product.title}" class="card-slide-img ${idx === 0 ? 'active' : ''}" data-index="${idx}" onclick="event.stopPropagation(); openZoom('${url}', '${product.image_url.replace(/'/g, "\\'")}')" style="display: ${idx === 0 ? 'block' : 'none'}; width: 100%; height: 200px; object-fit: cover; cursor: pointer;">`
-        ).join('');
-
-        imagesHtml = `
-            <div class="card-image-slider" id="${sliderId}" style="position: relative; width: 100%; overflow: hidden;">
-                ${imgTags}
-                ${imgs.length > 1 ? `
-                    <button onclick="event.stopPropagation(); changeCardSlide('${sliderId}', -1)" style="position: absolute; left: 5px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10;">&#10094;</button>
-                    <button onclick="event.stopPropagation(); changeCardSlide('${sliderId}', 1)" style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10;">&#10095;</button>
-                ` : ''}
-            </div>
-        `;
-    } else {
-        imagesHtml = `<img src="https://via.placeholder.com/300" alt="No image" style="width: 100%; height: 200px; object-fit: cover;">`;
-    }      
-    container.appendChild(card);
-}); // Закриваємо forEach та displayProducts
-        
-        // Масив для збереження поточних фото та індексу відкритого фото
-let currentLightboxImages = [];
-let currentLightboxIndex = 0;
-
-// Функція для відкриття великого перегляду зі стрілочками та червоним хрестиком
-function openLightbox(imageUrl, allImagesString = '') {
-    // Якщо передано кілька фото у вигляді рядка або масиву
     try {
         if (allImagesString) {
             currentLightboxImages = JSON.parse(allImagesString);
@@ -762,66 +624,130 @@ function openLightbox(imageUrl, allImagesString = '') {
     currentLightboxIndex = currentLightboxImages.indexOf(imageUrl);
     if (currentLightboxIndex === -1) currentLightboxIndex = 0;
 
-    let lightbox = document.getElementById('custom-lightbox');
-    if (!lightbox) {
-        lightbox = document.createElement('div');
-        lightbox.id = 'custom-lightbox';
-        lightbox.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 10px;';
-        document.body.appendChild(lightbox);
+    updateZoomModalContent();
+    
+    const zoomModal = document.getElementById('zoom-modal');
+    if (zoomModal) {
+        zoomModal.classList.add('active');
     }
-
-    updateLightboxContent();
-    lightbox.style.display = 'flex';
 }
 
-// Оновлення контенту модалки (зображення, стрілочки, червоний хрестик)
-function updateLightboxContent() {
-    const lightbox = document.getElementById('custom-lightbox');
-    if (!lightbox) return;
+function updateZoomModalContent() {
+    const zoomedImg = document.getElementById('zoomed-img');
+    const zoomModal = document.getElementById('zoom-modal');
+    if (!zoomedImg || !zoomModal) return;
+
+    zoomedImg.src = currentLightboxImages[currentLightboxIndex];
+    zoomedImg.style.transform = 'scale(1)';
+    zoomedImg.style.cursor = 'zoom-in';
+
+    let controlsContainer = document.getElementById('zoom-custom-controls');
+    if (!controlsContainer) {
+        controlsContainer = document.createElement('div');
+        controlsContainer.id = 'zoom-custom-controls';
+        zoomModal.appendChild(controlsContainer);
+    }
 
     const hasMultiple = currentLightboxImages.length > 1;
 
-    lightbox.innerHTML = `
-        <!-- Червоний хрестик зверху для виходу -->
-        <div onclick="document.getElementById('custom-lightbox').style.display='none'" style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: #ff4d4d; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+    controlsContainer.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000;';
+    controlsContainer.innerHTML = `
+        <div onclick="document.getElementById('zoom-modal').classList.remove('active')" style="position: absolute; top: 20px; right: 20px; width: 45px; height: 45px; background: #ff4d4d; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
             <span style="color: #fff; font-size: 28px; font-weight: bold; line-height: 1;">&times;</span>
         </div>
 
-        <!-- Стрілочка вліво (якщо фото більше одного) -->
         ${hasMultiple ? `
-            <div onclick="prevLightboxImage(event)" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000;">
+            <div onclick="prevZoomImage(event)" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto;">
                 <span style="color: #fff; font-size: 30px; font-weight: bold; line-height: 1;">&#10094;</span>
             </div>
-        ` : ''}
-
-        <!-- Головне зображення зі збільшенням -->
-        <div style="position: relative; max-width: 85%; max-height: 85vh; display: flex; align-items: center; justify-content: center;">
-            <img id="lightbox-img" src="${currentLightboxImages[currentLightboxIndex]}" style="display: block; max-width: 100%; max-height: 85vh; border-radius: 8px; transition: transform 0.2s ease; cursor: zoom-in;" onclick="toggleZoom(this)">
-        </div>
-
-        <!-- Стрілочка вправо (якщо фото більше одного) -->
-        ${hasMultiple ? `
-            <div onclick="nextLightboxImage(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000;">
+            <div onclick="nextZoomImage(event)" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; pointer-events: auto;">
                 <span style="color: #fff; font-size: 30px; font-weight: bold; line-height: 1;">&#10095;</span>
             </div>
         ` : ''}
     `;
 }
 
-// Функції перегортання
-function prevLightboxImage(event) {
+function prevZoomImage(event) {
     event.stopPropagation();
     currentLightboxIndex = (currentLightboxIndex - 1 + currentLightboxImages.length) % currentLightboxImages.length;
-    updateLightboxContent();
+    updateZoomModalContent();
 }
 
-function nextLightboxImage(event) {
+function nextZoomImage(event) {
     event.stopPropagation();
     currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxImages.length;
-    updateLightboxContent();
+    updateZoomModalContent();
+}
+                
+        document.getElementById('close-zoom').addEventListener('click', () => zoomModal.classList.remove('active'));
+        zoomModal.addEventListener('click', (e) => { if(e.target === zoomModal) zoomModal.classList.remove('active'); });
+
+        loadProducts();
+        // Функція для відображення списку товарів з підтримкою прокрутки фотографій
+function displayProducts(productsToDisplay) {
+    const container = document.getElementById('products-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+
+    productsToDisplay.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+
+        // Формуємо слайдер або список фотографій для прокрутки в картці
+        let imagesHtml = '';
+        if (product.image_url) {
+            let urls = [];
+            try {
+                urls = JSON.parse(product.image_url);
+                if (!Array.isArray(urls)) urls = [product.image_url];
+            } catch (e) {
+                urls = [product.image_url];
+            }
+
+            // Робимо блок із горизонтальною прокруткою для фото в картці
+            imagesHtml = `
+                <div class="card-images-scroll" style="display: flex; overflow-x: auto; gap: 8px; scroll-snap-type: x mandatory; margin-bottom: 10px; border-radius: 8px;">
+                    ${urls.map(url => `
+                        <img src="${url}" alt="${product.title}" style="min-width: 100%; height: 200px; object-fit: cover; scroll-snap-align: start; cursor: pointer; border-radius: 8px;" onclick="openLightbox('${url}')">
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            ${imagesHtml}
+            <h3>${product.title}</h3>
+            <p class="category">${product.category}</p>
+            <p class="price">${product.price} грн</p>
+            <p class="description">${product.description}</p>
+        `;
+
+        container.appendChild(card);
+    });
 }
 
-// Функція збільшення при кліку
+// Функція для відкриття великого перегляду (модалки з прокруткою та зумом)
+function openLightbox(imageUrl) {
+    let lightbox = document.getElementById('custom-lightbox');
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'custom-lightbox';
+        lightbox.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; overflow: auto; padding: 20px;';
+        lightbox.innerHTML = `
+            <div style="position: relative; max-width: 100%; max-height: 100%;">
+                <span onclick="document.getElementById('custom-lightbox').style.display='none'" style="position: absolute; top: -40px; right: 0; color: #fff; font-size: 35px; cursor: pointer; font-weight: bold;">&times;</span>
+                <img id="lightbox-img" src="" style="display: block; max-width: 100%; max-height: 85vh; border-radius: 8px; transition: transform 0.2s ease; cursor: zoom-in;" onclick="toggleZoom(this)">
+            </div>
+        `;
+        document.body.appendChild(lightbox);
+    }
+    
+    document.getElementById('lightbox-img').src = imageUrl;
+    lightbox.style.display = 'flex';
+}
+
+// Проста функція збільшення при кліку у великому перегляді
 function toggleZoom(img) {
     if (img.style.transform === 'scale(1.8)') {
         img.style.transform = 'scale(1)';
@@ -831,14 +757,7 @@ function toggleZoom(img) {
         img.style.cursor = 'zoom-out';
     }
 }
-     
-// Гарантований запуск одразу
-if (document.readyState === 'complete') {
-    loadProducts();
-} else {
-    window.addEventListener('load', loadProducts);
-}
-        
+
     </script>
 </body>
 </html>
