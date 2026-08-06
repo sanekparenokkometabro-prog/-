@@ -583,7 +583,35 @@
                     alert('Помилка завантаження фото: ' + uploadError.message);
                 }
             }
-
-            const { error: insertError } = await supabaseClient
+            
+const { error: insertError } = await supabaseClient
                 .from('products')
-                .insert([{ title, category, price, description, image_ur
+                .insert([{ title, category, price, description, image_url: uploadedUrls }]);
+
+            if (insertError) {
+                alert('Помилка збереження товару: ' + insertError.message);
+                submitBtn.textContent = 'Опублікувати оголошення';
+                submitBtn.disabled = false;
+            } else {
+                alert('Товар успішно додано!');
+                modal.classList.remove('active');
+                document.getElementById('add-product-form').reset();
+                submitBtn.textContent = 'Опублікувати оголошення';
+                submitBtn.disabled = false;
+                loadProducts();
+            }
+        });
+
+        const zoomModal = document.getElementById('zoom-modal');
+        const zoomedImg = document.getElementById('zoomed-img');
+        function openZoom(url) {
+            zoomedImg.src = url;
+            zoomModal.classList.add('active');
+        }
+        document.getElementById('close-zoom').addEventListener('click', () => zoomModal.classList.remove('active'));
+        zoomModal.addEventListener('click', (e) => { if(e.target === zoomModal) zoomModal.classList.remove('active'); });
+
+        loadProducts();
+    </script>
+</body>
+</html>
