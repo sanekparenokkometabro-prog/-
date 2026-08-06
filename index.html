@@ -840,7 +840,13 @@ setTimeout(() => {
         loadProducts();
     }
 }, 500);
-        
+
+        window.addEventListener('DOMContentLoaded', () => {
+    if (typeof loadProducts === 'function') {
+        loadProducts();
+    }
+});
+           
     </script>
 </body>
 </html>
