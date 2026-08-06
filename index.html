@@ -445,23 +445,27 @@
         });
 
         async function loadProducts() {
-            const container = document.getElementById('products-container');
-            const { data, error } = await supabaseClient
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false });
+    const container = document.getElementById('products-container') || document.getElementById('container');
+    if (!container) return;
 
-            if (error) {
-                container.innerHTML = `<div class="no-products">Помилка завантаження: ${error.message}</div>`;
-                return;
-            }
+    try {
+        const { data, error } = await supabaseClient
+            .from('products')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="no-products">Поки що немає жодного оголошення.</div>`;
-                return;
-            }
+        if (error) {
+            console.error('Помилка Supabase:', error);
+            container.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">Помилка завантаження: ${error.message}</p>`;
+            return;
+        }
 
-                container.innerHTML = '';
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="text-align: center; padding: 20px;">Товарів поки немає</p>';
+            return;
+        }
+
+        container.innerHTML = '';
     data.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
