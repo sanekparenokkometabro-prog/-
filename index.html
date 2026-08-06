@@ -461,30 +461,36 @@
                 return;
             }
 
-            container.innerHTML = '';
+                        container.innerHTML = '';
             data.forEach(product => {
-                let imgs = parseImages(product.image_url);
-                let imagesHtml = '';
-                if (imgs.length > 0) {
-                    imgs.forEach(url => {
-                            if (imgs.length > 0) {
-        imgs.forEach(url => {
-            imagesHtml += `<img src="${url}" alt="${product.title}" onclick="event.stopPropagation(); openZoom('${url}', '${product.image_url.replace(/'/g, "\\'")}')" style="cursor: pointer;">`;
-        });
-    } else {
-        imagesHtml = `<img src="https://via.placeholder.com/300" alt="No image">`;
-                            }          
-
                 const card = document.createElement('div');
                 card.className = 'product-card';
+                
+                let imgs = parseImages(product.image_url);
+                let imageUrl = imgs.length > 0 ? imgs[0] : 'https://via.placeholder.com/300';
+
                 card.innerHTML = `
-                    <div class="product-gallery">${imagesHtml}</div>
+                    <div class="product-gallery">
+                        <img src="${imageUrl}" alt="${product.title}">
+                    </div>
                     <div class="product-content">
-                        <span class="product-category">${product.category}</span>
+                        <div class="product-category">${product.category || ''}</div>
                         <h3 class="product-title">${product.title}</h3>
                         <div class="product-price">${product.price} грн</div>
                     </div>
                 `;
+                
+                card.addEventListener('click', () => {
+                    if (typeof openDetailModal === 'function') {
+                        openDetailModal(product);
+                    } else {
+                        alert(product.title + ' - ' + product.price + ' грн');
+                    }
+                });
+                
+                container.appendChild(card);
+            });
+            
                 card.addEventListener('click', () => openDetailModal(product));
                 container.appendChild(card);
             });
