@@ -612,6 +612,82 @@ const { error: insertError } = await supabaseClient
         zoomModal.addEventListener('click', (e) => { if(e.target === zoomModal) zoomModal.classList.remove('active'); });
 
         loadProducts();
+
+        // Функція для відображення списку товарів з підтримкою прокрутки фотографій
+function displayProducts(productsToDisplay) {
+    const container = document.getElementById('products-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+
+    productsToDisplay.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+
+        // Формуємо слайдер або список фотографій для прокрутки в картці
+        let imagesHtml = '';
+        if (product.image_url) {
+            let urls = [];
+            try {
+                urls = JSON.parse(product.image_url);
+                if (!Array.isArray(urls)) urls = [product.image_url];
+            } catch (e) {
+                urls = [product.image_url];
+            }
+
+            // Робимо блок із горизонтальною прокруткою для фото в картці
+            imagesHtml = `
+                <div class="card-images-scroll" style="display: flex; overflow-x: auto; gap: 8px; scroll-snap-type: x mandatory; margin-bottom: 10px; border-radius: 8px;">
+                    ${urls.map(url => `
+                        <img src="${url}" alt="${product.title}" style="min-width: 100%; height: 200px; object-fit: cover; scroll-snap-align: start; cursor: pointer; border-radius: 8px;" onclick="openLightbox('${url}')">
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            ${imagesHtml}
+            <h3>${product.title}</h3>
+            <p class="category">${product.category}</p>
+            <p class="price">${product.price} грн</p>
+            <p class="description">${product.description}</p>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+// Функція для відкриття великого перегляду (модалки з прокруткою та зумом)
+function openLightbox(imageUrl) {
+    let lightbox = document.getElementById('custom-lightbox');
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'custom-lightbox';
+        lightbox.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 9999; overflow: auto; padding: 20px;';
+        lightbox.innerHTML = `
+            <div style="position: relative; max-width: 100%; max-height: 100%;">
+                <span onclick="document.getElementById('custom-lightbox').style.display='none'" style="position: absolute; top: -40px; right: 0; color: #fff; font-size: 35px; cursor: pointer; font-weight: bold;">&times;</span>
+                <img id="lightbox-img" src="" style="display: block; max-width: 100%; max-height: 85vh; border-radius: 8px; transition: transform 0.2s ease; cursor: zoom-in;" onclick="toggleZoom(this)">
+            </div>
+        `;
+        document.body.appendChild(lightbox);
+    }
+    
+    document.getElementById('lightbox-img').src = imageUrl;
+    lightbox.style.display = 'flex';
+}
+
+// Проста функція збільшення при кліку у великому перегляді
+function toggleZoom(img) {
+    if (img.style.transform === 'scale(1.8)') {
+        img.style.transform = 'scale(1)';
+        img.style.cursor = 'zoom-in';
+    } else {
+        img.style.transform = 'scale(1.8)';
+        img.style.cursor = 'zoom-out';
+    }
+}
+        
     </script>
 </body>
 </html>
