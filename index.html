@@ -443,7 +443,7 @@
                 alert('Невірний пароль доступу!');
             }
         });
-        
+
         async function loadProducts() {
             const container = document.getElementById('products-container');
             const { data, error } = await supabaseClient
@@ -465,13 +465,13 @@
             data.forEach(product => {
                 let imgs = parseImages(product.image_url);
                 let imagesHtml = '';
-                if (imgs.length > 0) {
-                    imgs.forEach(url => {
-                        imagesHtml += `<img src="${url}" alt="${product.title}">`;
-                    });
-                } else {
-                    imagesHtml = `<img src="https://via.placeholder.com/300x220?text=No+Photo" alt="No Photo">`;
-                }
+                    if (imgs.length > 0) {
+        imgs.forEach(url => {
+            imagesHtml += `<img src="${url}" alt="${product.title}" onclick="event.stopPropagation(); openZoom('${url}', '${product.image_url.replace(/'/g, "\\'")}')" style="cursor: pointer;">`;
+        });
+    } else {
+        imagesHtml = `<img src="https://via.placeholder.com/300" alt="No image">`;
+                    }
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
@@ -487,7 +487,7 @@
                 container.appendChild(card);
             });
         }
-        
+
         function parseImages(imgField) {
             if (!imgField) return [];
             if (Array.isArray(imgField)) return imgField;
@@ -566,10 +566,10 @@
 
             let uploadedUrls = [];
 
-                        for (let i = 0; i < imageFiles.length; i++) {
+            for (let i = 0; i < imageFiles.length; i++) {
                 const file = imageFiles[i];
                 const fileName = `${Date.now()}_${i}_${file.name}`;
-                
+                // Використовуємо правильну назву бакета 'images'
                 const { error: uploadError } = await supabaseClient.storage
                     .from('images')
                     .upload(fileName, file);
@@ -582,11 +582,11 @@
                 } else {
                     alert('Помилка завантаження фото: ' + uploadError.message);
                 }
-                        }
+            }
 
             const { error: insertError } = await supabaseClient
                 .from('products')
-                .insert([{ title, category, price, description, image_url: uploadedUrls }]);
+                 .insert([{ title, category, price, description, image_url: uploadedUrls }]);
 
             if (insertError) {
                 alert('Помилка збереження товару: ' + insertError.message);
@@ -606,21 +606,36 @@
         const zoomedImg = document.getElementById('zoomed-img');
         let currentLightboxImages = [];
 let currentLightboxIndex = 0;
-
 function openZoom(imageUrl, allImagesString = '') {
-    try {
-        if (allImagesString) {
-            currentLightboxImages = JSON.parse(allImagesString);
-            if (!Array.isArray(currentLightboxImages)) currentLightboxImages = [imageUrl];
-        } else {
-            currentLightboxImages = [imageUrl];
+function openZoom(imageUrl, allImagesString = '') {
+    currentLightboxImages = [];
+    
+    // Спробуємо розпарсити або розділити рядок на масив зображень
+    if (allImagesString) {
+        try {
+            let parsed = JSON.parse(allImagesString);
+            if (Array.isArray(parsed)) {
+                currentLightboxImages = parsed;
+            } else if (typeof parsed === 'string') {
+                currentLightboxImages = [parsed];
+            }
+        } catch (e) {
+            // Якщо це не JSON, спробуємо розділити комами або пробілами
+            currentLightboxImages = allImagesString.split(/[\s,]+/).filter(Boolean);
         }
-    } catch (e) {
+    }
+    
+    // Якщо масив все ще порожній або має 1 елемент, але клікнули конкретний URL — додаємо його
+    if (currentLightboxImages.length === 0) {
         currentLightboxImages = [imageUrl];
     }
     
+    // Гарантуємо, що поточна картинка точно є в списку, щоб стрілочки працювали
     currentLightboxIndex = currentLightboxImages.indexOf(imageUrl);
-    if (currentLightboxIndex === -1) currentLightboxIndex = 0;
+    if (currentLightboxIndex === -1) {
+        currentLightboxImages.unshift(imageUrl);
+        currentLightboxIndex = 0;
+    }
 
     updateZoomModalContent();
     
@@ -629,7 +644,7 @@ function openZoom(imageUrl, allImagesString = '') {
         zoomModal.classList.add('active');
     }
 }
-
+    
 function updateZoomModalContent() {
     const zoomedImg = document.getElementById('zoomed-img');
     const zoomModal = document.getElementById('zoom-modal');
@@ -676,11 +691,12 @@ function nextZoomImage(event) {
     currentLightboxIndex = (currentLightboxIndex + 1) % currentLightboxImages.length;
     updateZoomModalContent();
 }
-                
+        
         document.getElementById('close-zoom').addEventListener('click', () => zoomModal.classList.remove('active'));
         zoomModal.addEventListener('click', (e) => { if(e.target === zoomModal) zoomModal.classList.remove('active'); });
 
         loadProducts();
+
         // Функція для відображення списку товарів з підтримкою прокрутки фотографій
 function displayProducts(productsToDisplay) {
     const container = document.getElementById('products-container');
@@ -755,7 +771,7 @@ function toggleZoom(img) {
         img.style.cursor = 'zoom-out';
     }
 }
-
+        
     </script>
 </body>
 </html>
