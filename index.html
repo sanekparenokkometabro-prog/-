@@ -852,7 +852,20 @@ function toggleZoom(img) {
         document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
 });
-            
+           // Гарантований запуск одразу після завантаження сторінки
+window.addEventListener('DOMContentLoaded', () => {
+    console.log("Сторінка завантажена, викликаємо loadProducts...");
+    loadProducts();
+});
+
+// Також дублюємо виклик одразу, раптом подія вже минула
+setTimeout(() => {
+    const container = document.getElementById('products-container');
+    if (container && container.innerHTML.includes('Завантаження товарів')) {
+        loadProducts();
+    }
+}, 500);
+        
     </script>
 </body>
 </html>
