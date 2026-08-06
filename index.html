@@ -566,10 +566,10 @@
 
             let uploadedUrls = [];
 
-            for (let i = 0; i < imageFiles.length; i++) {
+                        for (let i = 0; i < imageFiles.length; i++) {
                 const file = imageFiles[i];
                 const fileName = `${Date.now()}_${i}_${file.name}`;
-                // Використовуємо правильну назву бакета 'images'
+                
                 const { error: uploadError } = await supabaseClient.storage
                     .from('images')
                     .upload(fileName, file);
@@ -582,7 +582,7 @@
                 } else {
                     alert('Помилка завантаження фото: ' + uploadError.message);
                 }
-            }
+                        }
             
 const { error: insertError } = await supabaseClient
                 .from('products')
