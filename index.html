@@ -445,57 +445,44 @@
         });
 
         async function loadProducts() {
-            const container = document.getElementById('products-container');
-            const { data, error } = await supabaseClient
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false });
+    const container = document.getElementById('products-container');
+    if (!container) return;
 
-            if (error) {
-                container.innerHTML = `<div class="no-products">Помилка завантаження: ${error.message}</div>`;
-                return;
-            }
+    container.innerHTML = '<div style="padding: 15px; color: red;">Завантаження...</div>';
 
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="no-products">Поки що немає жодного оголошення.</div>`;
-                return;
-            }
+    try {
+        const { data, error } = await supabaseClient
+            .from('products')
+            .select('*');
 
-                        container.innerHTML = '';
-            data.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                
-                let imgs = parseImages(product.image_url);
-                let imageUrl = imgs.length > 0 ? imgs[0] : 'https://via.placeholder.com/300';
+        if (error) throw error;
 
-                card.innerHTML = `
-                    <div class="product-gallery">
-                        <img src="${imageUrl}" alt="${product.title}">
-                    </div>
-                    <div class="product-content">
-                        <div class="product-category">${product.category || ''}</div>
-                        <h3 class="product-title">${product.title}</h3>
-                        <div class="product-price">${product.price} грн</div>
-                    </div>
-                `;
-                
-                card.addEventListener('click', () => {
-                    if (typeof openDetailModal === 'function') {
-                        openDetailModal(product);
-                    } else {
-                        alert(product.title + ' - ' + product.price + ' грн');
-                    }
-                });
-                
-                container.appendChild(card);
-            });
-            
-                card.addEventListener('click', () => openDetailModal(product));
-                container.appendChild(card);
-            });
+        container.innerHTML = '';
+        
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div style="padding: 15px; text-align: center;">Товарів поки немає</div>';
+            return;
         }
 
+        data.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                <div style="padding: 15px;">
+                    <h3>${product.title || 'Без назви'}</h3>
+                    <p>${product.price || 0} грн</p>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+    } catch (err) {
+        // ОЦЕЙ РЯДОК ВИВЕДЕ ПОМИЛКУ НА ЕКРАН ТЕЛЕФОНУ
+        container.innerHTML = `<div style="padding: 20px; color: red; background: #fff0f0; border: 1px solid red;">ПОМИЛКА: ${err.message}</div>`;
+        console.error(err);
+    }
+        }
+        
         function parseImages(imgField) {
             if (!imgField) return [];
             if (Array.isArray(imgField)) return imgField;
