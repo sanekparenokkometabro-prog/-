@@ -691,20 +691,11 @@ function displayProducts(productsToDisplay) {
         const card = document.createElement('div');
         card.className = 'product-card';
 
-        // Формуємо слайдер або список фотографій для прокрутки в картці
-        let imagesHtml = '';
-        if (product.image_url) {
-            let urls = [];
-            try {
-                urls = JSON.parse(product.image_url);
-                if (!Array.isArray(urls)) urls = [product.image_url];
-            } catch (e) {
-                urls = [product.image_url];
-            }
-
                 // Формуємо слайдер або список фото з підтримкою гортання прямо в картці
     let imagesHtml = '';
+        let imgs = parseImages(product.image_url);
     if (imgs.length > 0) {
+        
         // Унікальний ID для конкретного товару, щоб стрілочки керували саме його картинкою
         const sliderId = 'slider_' + (product.id || Math.random().toString(36).substr(2, 9));
         
