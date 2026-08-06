@@ -493,20 +493,24 @@
         container.appendChild(card);
     });
             
-        function parseImages(imgField) {
-            if (!imgField) return [];
-            if (Array.isArray(imgField)) return imgField;
-            if (typeof imgField === 'string') {
-                try {
-                    let parsed = JSON.parse(imgField);
-                    if (Array.isArray(parsed)) return parsed;
-                    if (typeof parsed === 'string') return [parsed];
-                } catch(e) {}
-                return imgField.split(',').map(s => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+function parseImages(imgField) {
+    if (!imgField) return [];
+    if (Array.isArray(imgField)) return imgField;
+    if (typeof imgField === 'string') {
+        try {
+            let parsed = JSON.parse(imgField);
+            if (Array.isArray(parsed)) return parsed;
+            if (typeof parsed === 'string') return [parsed];
+        } catch (e) {
+            if (imgField.includes(',')) {
+                return imgField.split(',').map(s => s.trim().replace(/['"]+/g, ''));
             }
-            return [];
+            return [imgField.replace(/['"\[\]]+/g, '').trim()];
         }
-
+    }
+    return [];
+}
+            
         const detailModal = document.getElementById('detail-modal');
         document.getElementById('close-detail').addEventListener('click', () => detailModal.classList.remove('active'));
 
