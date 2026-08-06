@@ -475,14 +475,15 @@
 
                 const card = document.createElement('div');
                 card.className = 'product-card';
-                card.innerHTML = `
-                    <div class="product-gallery">${imagesHtml}</div>
-                    <div class="product-content">
-                        <span class="product-category">${product.category}</span>
-                        <h3 class="product-title">${product.title}</h3>
-                        <div class="product-price">${product.price} грн</div>
-                    </div>
-                `;
+                        card.innerHTML = `
+        <img src="${imagesHtml ? imagesHtml : 'https://via.placeholder.com/300'}" alt="${product.title}" style="width: 100%; height: 180px; object-fit: cover; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+        <div style="padding: 12px;">
+            <div style="font-size: 12px; color: #666;">${product.category || ''}</div>
+            <h3 style="margin: 5px 0; font-size: 16px;">${product.title}</h3>
+            <div style="font-weight: bold; color: #222;">${product.price} грн</div>
+        </div>
+    `;
+                
                 card.addEventListener('click', () => openDetailModal(product));
                 container.appendChild(card);
             });
