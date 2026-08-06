@@ -692,9 +692,13 @@ function displayProducts(productsToDisplay) {
         card.className = 'product-card';
 
                 // Формуємо слайдер або список фото з підтримкою гортання прямо в картці
-    let imagesHtml = '';
-        let imgs = parseImages(product.image_url);
-    if (imgs.length > 0) {
+        let imgs = [];
+    try {
+        imgs = JSON.parse(product.image_url);
+        if (!Array.isArray(imgs)) imgs = [product.image_url];
+    } catch (e) {
+        imgs = product.image_url ? [product.image_url] : [];
+    }
         
         // Унікальний ID для конкретного товару, щоб стрілочки керували саме його картинкою
         const sliderId = 'slider_' + (product.id || Math.random().toString(36).substr(2, 9));
