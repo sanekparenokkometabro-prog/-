@@ -836,29 +836,6 @@ function toggleZoom(img) {
     }
 }
 
-            function changeCardSlide(sliderId, direction) {
-    const slider = document.getElementById(sliderId);
-    if (!slider) return;
-    
-    const imgs = slider.querySelectorAll('.card-slide-img');
-    if (imgs.length <= 1) return;
-    
-    let currentIndex = 0;
-    imgs.forEach((img, idx) => {
-        if (img.style.display === 'block') {
-            currentIndex = idx;
-        }
-        img.style.display = 'none';
-        img.classList.remove('active');
-    });
-    
-    let newIndex = (currentIndex + direction + imgs.length) % imgs.length;
-    imgs[newIndex].style.display = 'block';
-    imgs[newIndex].classList.add('active');
-            }
-        document.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-});
            // Гарантований запуск одразу після завантаження сторінки
 window.addEventListener('DOMContentLoaded', () => {
     console.log("Сторінка завантажена, викликаємо loadProducts...");
