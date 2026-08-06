@@ -460,13 +460,14 @@
                 container.innerHTML = `<div class="no-products">Поки що немає жодного оголошення.</div>`;
                 return;
             }
-
-                container.innerHTML = '';
+    container.innerHTML = '';
     data.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
 
-        // Витягуємо перше посилання на картинку з бази
+        // ДИВИМОСЬ ЩО САМЕ ПРИХОДИТЬ З БАЗИ
+        console.log("Товар:", product.title, "image_url:", product.image_url);
+
         let imgs = parseImages(product.image_url);
         let imageUrl = (Array.isArray(imgs) && imgs.length > 0) ? imgs[0] : (product.image_url || 'https://via.placeholder.com/300');
         if (typeof imageUrl === 'string' && imageUrl.includes('src="')) {
@@ -491,7 +492,7 @@
 
         container.appendChild(card);
     });
-
+            
         function parseImages(imgField) {
             if (!imgField) return [];
             if (Array.isArray(imgField)) return imgField;
