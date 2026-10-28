@@ -627,47 +627,49 @@
             cursor: pointer;
             flex-shrink: 0;
             border: 2px solid transparent;
-            transition: all 0.2s;
+                    let supabaseClient = null;
+        try {
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            }
+        } catch(e) {
+            console.warn('Supabase client init issue:', e);
         }
 
-        .details-gallery img.active-thumb {
-            border-color: var(--accent-color);
-        }
+        async function loadProducts() {
+            container.innerHTML = `<div class="no-products">Завантаження товарів...</div>`;
 
-        .main-photo-container {
-            position: relative;
-            width: 100%;
-            height: 320px;
-            background-color: #EFECE6;
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+            if (!supabaseClient) {
+                productsList = mockProducts;
+                renderProducts();
+                return;
+            }
 
-        .main-photo-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            cursor: pointer;
-        }
+            try {
+                // Безпечний запит з таймаутом у 3 сек для запобігання нескінченному зависанню
+                const fetchPromise = supabaseClient
+                    .from('products')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-        .nav-arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.85);
-            color: var(--text-primary);
-            border: none;
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 20px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Supabase Timeout')), 3000)
+                );
+
+                const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+                if (error || !data || data.length === 0) {
+                    productsList = mockProducts;
+                } else {
+                    productsList = data;
+                }
+            } catch (err) {
+                console.warn('Використовуються демо-товари:', err);
+                productsList = mockProducts;
+            }
+
+            renderProducts();
+        }
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
