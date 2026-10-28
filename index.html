@@ -1,3 +1,4 @@
+`html
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -152,8 +153,7 @@
         .btn-add {
             background-color: var(--accent-color);
             color: white;
-            border: none;
-            padding: 8px 16px;
+            border: none;padding: 8px 16px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
@@ -481,8 +481,7 @@
 
         .cart-item-price {
             color: var(--text-secondary);
-            font-size:
-                13px;
+            font-size:13px;
         }
 
         .cart-qty-controls {
@@ -637,8 +636,7 @@
         }
 
         .main-photo-container {
-            position: relati
-            ve;
+            position: relative;
             width: 100%;
             height: 320px;
             background-color: #EFECE6;
@@ -786,8 +784,7 @@
             border-color: var(--boy-color);
         }
 
-        .gender-tab-btn.active[data-gender="Дівчинка"] {
-            background-color: var(--girl-color);
+        .gender-tab-btn.active[data-gender="Дівчинка"] {background-color: var(--girl-color);
             color: white;
             border-color: var(--girl-color);
         }
@@ -932,8 +929,7 @@
             <h1>Якісний та зручний одяг для малюків</h1>
             <p>Підібрано з турботою та любов'ю до деталей</p>
             <div class="admin-banner" id="admin-banner">
-                <span>Ви авторизовані як <strong>
-                    Адміністратор</strong> (можете додавати/видаляти товари та відгуки)</span>
+                <span>Ви авторизовані як <strong>Адміністратор</strong> (можете додавати/видаляти товари та відгуки)</span>
                 <button id="btn-logout" style="background:none; border:none; color:var(--danger-color); font-weight:600; cursor:pointer; text-decoration:underline;">Вийти</button>
             </div>
         </section>
@@ -1015,8 +1011,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="customer-address">Номер відділення / поштомату / адреса *</label>
-                    <input type="text" id="customer-address" required placeholder="Відділення №5 (вул. Хрещатик, 1)">
+                    <label for="customer-address">Номер відділення / поштомату / адреса *</label><input type="text" id="customer-address" required placeholder="Відділення №5 (вул. Хрещатик, 1)">
                 </div>
 
                 <div class="form-group">
@@ -1090,8 +1085,7 @@
                 <div class="form-group">
                     <label for="category">Категорія</label>
                     <select id="category">
-                        <option value="Немовлята">Немовлята (боді, чоловічки)
-                            </option>
+                        <option value="Немовлята">Немовлята (боді, чоловічки)</option>
                         <option value="Піжама Байкова">Піжама Байкова</option>
                         <option value="Піжама Махрова">Піжама Махрова</option>
                         <option value="Піжама Бавовняна">Піжама Бавовняна</option>
@@ -1169,8 +1163,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/
-        supabase-js@2.48.0/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.0/dist/umd/supabase.min.js"></script>
     <script>
         const SUPABASE_URL = 'https://hwdidcerlfczccmqioby.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_06UBKOGh2dwXy6WK8VkO4w_wJGn0FfA';
@@ -1269,8 +1262,7 @@
                     { id: 'r-1', author: 'Анна', rating: 5, text: 'Дуже чудове боді! Бавовна м\'якенька, після прання не сідає.', date: '12.02.2025' }
                 ],
                 'demo-2': [
-                    { id: 'r-
-                        2', author: 'Марія', rating: 5, text: 'Комбінезон просто казка, дуже теплий та милий!', date: '15.02.2025' }
+                    { id: 'r-2', author: 'Марія', rating: 5, text: 'Комбінезон просто казка, дуже теплий та милий!', date: '15.02.2025' }
                 ]
             };
             localStorage.setItem('product_reviews', JSON.stringify(reviewsData));
@@ -1358,8 +1350,7 @@
         document.getElementById('close-login').onclick = () => modalLogin.classList.remove('active');
         document.getElementById('close-add').onclick = () => modalAdd.classList.remove('active');
         document.getElementById('close-details').onclick = () => modalDetails.classList.remove('active');
-        document.getElementById('close-zoom').onclick = () => zoomModal.classList.remov
-        e('active');
+        document.getElementById('close-zoom').onclick = () => zoomModal.classList.remove('active');
         document.getElementById('close-cart').onclick = () => modalCart.classList.remove('active');
         document.getElementById('close-checkout').onclick = () => modalCheckout.classList.remove('active');
         document.getElementById('close-orders').onclick = () => modalOrders.classList.remove('active');
@@ -1432,8 +1423,7 @@
                             <div>📍 <strong>Доставка:</strong> ${escapeHtml(order.customer.city)}, ${escapeHtml(order.customer.delivery)} — ${escapeHtml(order.customer.address)}</div>
                             <div>💳 <strong>Оплата:</strong> ${escapeHtml(order.customer.payment)}</div>
                             ${order.customer.comment ? <div>💬 <strong>Коментар:</strong> ${escapeHtml(order.customer.comment)}</div>` : ''}
-                        </div>
-                        <div style="background: white; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px;">
+                        </div><div style="background: white; padding: 8px 12px; border-radius: 6px; margin-bottom: 8px;">
                             <div style="font-weight: 600; font-size: 13px; color: var(--text-secondary);">Товари:</div>
                             ${itemsListHtml}
                         </div>
@@ -1706,7 +1696,7 @@
 
             const { id, index } = itemToDelete;
             modalConfirm.classList.remove('active');
-            modalDetails.classLis t.remove('active');
+            modalDetails.classList.remove('active');
 
             if (String(id).startsWith('demo-')) {
                 productsList.splice(index, 1);
@@ -2108,3 +2098,4 @@
     </script>
 </body>
 </html>
+`
